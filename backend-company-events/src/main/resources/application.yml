@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: company-events
+  output:
+    ansi:
+      enabled: ALWAYS
+  datasource:
+    url: ${POSTGRES_DB_URL}
+    username: ${POSTGRES_DB_USER}
+    password: ${POSTGRES_DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: ${SHOW_SQL}
+    open-in-view: true
+
+server:
+  port: 3005
+  address: 0.0.0.0
+  forward-headers-strategy: native
+
+springdoc:
+  api-docs:
+    path: /api/company-events/api-docs
+  swagger-ui:
+    path: /api/company-events/swagger
+
+telegram-bot:
+  api-address: ${TELEGRAM_BOT_API_ADDRESS}
