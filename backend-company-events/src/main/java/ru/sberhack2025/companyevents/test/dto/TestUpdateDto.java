@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
-import java.util.UUID;
-
 /**
  * @author Andrey Kurnosov
  */
@@ -16,9 +14,7 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TestUpdateDto {
 
-    @Schema(description = "Test id")
-    UUID id;
-
     @Schema(description = "Test name", example = "test-name")
     String name;
+
 }
