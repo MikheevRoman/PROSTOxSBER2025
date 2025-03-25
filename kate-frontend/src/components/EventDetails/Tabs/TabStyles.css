@@ -1,0 +1,154 @@
+/* Общие стили для вкладок */
+.tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.tab-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--text-color);
+}
+
+.add-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Стили для формы */
+.form-container {
+  margin-bottom: 16px;
+}
+
+.form-container h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: var(--text-color);
+  font-size: 1.2rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+/* Стили для таблицы */
+th.ascending::after {
+  content: ' ↑';
+}
+
+th.descending::after {
+  content: ' ↓';
+}
+
+th {
+  cursor: pointer;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.btn-icon:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--accent-color);
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  display: block;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-badge.completed {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.status-badge.in-progress {
+  background-color: var(--warning-color);
+  color: white;
+}
+
+/* Стили для футера таблицы */
+tfoot td {
+  font-weight: 500;
+}
+
+td.positive {
+  color: var(--success-color);
+}
+
+td.negative {
+  color: var(--danger-color);
+}
+
+/* Стили для индикации скрытых столбцов */
+.hidden-columns-hint {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  margin-top: -12px;
+  margin-bottom: 16px;
+  font-style: italic;
+}
+
+.table-container.table-has-more::after {
+  display: block;
+}
+
+/* Стили для чекбоксов в MyTasksTab */
+.checkbox-cell {
+  text-align: center;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .tab-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+} 
