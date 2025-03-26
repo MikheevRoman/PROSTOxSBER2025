@@ -1,0 +1,24 @@
+.add-purchase-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.purchase-form {
+  padding: 1rem 0;
+}
+
+.form-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1rem;
+  color: #5f6368;
+} 

@@ -1,162 +1,63 @@
 .event-details-container {
-  width: 100%;
-}
-
-.event-header {
-  background-color: var(--card-background);
-  border-radius: 10px;
-  padding: 12px;
-  margin-bottom: 16px;
-  box-shadow: var(--shadow);
-}
-
-.event-header-top {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-.event-title {
-  margin: 0;
-  font-size: 1.3rem;
-  color: var(--text-color);
-  text-align: center;
-  flex: 1;
-}
-
-.user-role {
-  background-color: var(--accent-color);
-  color: white;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.back-button {
-  background: none;
-  border: none;
-  color: var(--primary-color);
-  cursor: pointer;
-  font-size: 0.9rem;
-  padding: 4px 8px;
-  margin-right: 8px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-
-.back-button:hover {
-  background-color: rgba(66, 133, 244, 0.1);
+.event-summary {
+  background-color: white;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e8eaed;
 }
 
 .event-info {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 8px;
   font-size: 0.9rem;
 }
 
-.info-item {
-  display: flex;
-  flex-direction: column;
+.event-date,
+.event-location,
+.event-budget,
+.event-note {
+  margin-bottom: 0.5rem;
 }
 
-.info-label {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin-bottom: 2px;
-}
-
-.info-value {
+.event-label {
   font-weight: 500;
-  color: var(--text-color);
+  color: #3c4043;
 }
 
-/* Стили для вкладок и их контейнера */
-.tabs-container {
-  position: relative;
-}
-
-.tabs {
-  position: sticky;
-  top: 0;
-  background-color: var(--background-color);
-  z-index: 10;
-  padding: 2px 0;
-  margin-bottom: 12px;
+.event-status {
+  margin-top: 0.75rem;
   display: flex;
-  overflow-x: auto;
-  scrollbar-width: none; /* Firefox */
-}
-
-.tabs::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Edge */
-}
-
-.tab {
-  padding: 10px 14px;
-  cursor: pointer;
-  white-space: nowrap;
-  color: var(--text-secondary);
-  position: relative;
-  transition: color 0.3s;
-  font-size: 0.9rem;
-}
-
-.tab.active {
-  color: var(--primary-color);
-  font-weight: 500;
-}
-
-.tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background-color: var(--primary-color);
+  justify-content: flex-end;
 }
 
 .tab-content {
-  background-color: var(--card-background);
-  border-radius: 10px;
-  padding: 16px;
-  box-shadow: var(--shadow);
-  min-height: 400px;
+  flex: 1;
+  padding: 1rem 0;
 }
 
-/* Состояния загрузки и ошибки */
-.loading, .error {
-  text-align: center;
-  padding: 40px;
-  font-size: 1.1rem;
-  color: var(--text-secondary);
+.loading,
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1rem;
+  color: #5f6368;
 }
 
 .error {
-  color: var(--danger-color);
+  color: #d93025;
 }
 
-/* Адаптивность */
-@media (max-width: 768px) {
-  .event-header-top {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  
+@media (min-width: 768px) {
   .event-info {
-    grid-template-columns: 1fr;
-    gap: 6px;
+    font-size: 1rem;
   }
   
-  .tab {
-    padding: 8px 12px;
-    font-size: 0.85rem;
-  }
-  
-  .tab-content {
-    padding: 12px;
+  .event-summary {
+    padding: 1.25rem;
   }
 } 

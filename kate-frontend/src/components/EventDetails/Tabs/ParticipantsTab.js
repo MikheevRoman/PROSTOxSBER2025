@@ -1,152 +1,125 @@
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { getEventInviteLink, removeParticipant, assignNewOrganizer } from '../../../services/eventService';
 import './TabStyles.css';
 
-const ParticipantsTab = ({ event, updateParticipants, isOrganizer, currentUser }) => {
-  const [inviteLink, setInviteLink] = useState(`${window.location.origin}/invite/${event.id}`);
-  const [newOrganizerIndex, setNewOrganizerIndex] = useState(null);
-  
-  // Копирование ссылки-приглашения
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(inviteLink)
+const ParticipantsTab = ({ event }) => {
+  const { eventId } = useParams();
+  const [participants, setParticipants] = useState(event.participants || []);
+
+  const handleRemoveParticipant = (participantId) => {
+    if (window.confirm('Вы уверены, что хотите удалить этого участника?')) {
+      const success = removeParticipant(eventId, participantId);
+      if (success) {
+        setParticipants(prevParticipants => 
+          prevParticipants.filter(p => p !== participantId)
+        );
+      }
+    }
+  };
+
+  const handleAssignOrganizer = (participantId) => {
+    if (window.confirm('Назначить этого участника организатором? Вы останетесь участником, но потеряете права организатора.')) {
+      const success = assignNewOrganizer(eventId, participantId);
+      if (success) {
+        // Обновление состояния на клиенте
+        // В реальном приложении здесь будет перезагрузка данных мероприятия
+        window.location.reload();
+      }
+    }
+  };
+
+  const copyInviteLink = () => {
+    const link = getEventInviteLink(eventId);
+    navigator.clipboard.writeText(link)
       .then(() => {
-        alert('Ссылка скопирована!');
+        alert('Ссылка-приглашение скопирована в буфер обмена');
       })
       .catch(err => {
-        console.error('Не удалось скопировать: ', err);
+        console.error('Не удалось скопировать ссылку: ', err);
       });
   };
 
-  // Удаление участника
-  const handleRemoveParticipant = (participantId) => {
-    if (participantId === event.organizerId) {
-      alert('Нельзя удалить организатора мероприятия');
-      return;
+  // В реальном приложении здесь было бы отображение имен участников
+  // Для демо используем идентификаторы
+  const getParticipantName = (participantId) => {
+    if (participantId === 'currentUser') {
+      return 'Вы';
     }
-    
-    if (window.confirm('Вы уверены, что хотите удалить этого участника?')) {
-      const updatedParticipants = event.participants.filter(p => p !== participantId);
-      updateParticipants(updatedParticipants);
-    }
+    return `Участник ${participantId.substring(0, 5)}`;
   };
 
-  // Открытие меню назначения нового организатора
-  const toggleOrganizeChange = (index) => {
-    setNewOrganizerIndex(newOrganizerIndex === index ? null : index);
-  };
-
-  // Назначение нового организатора
-  const handleChangeOrganizer = (newOrganizerId) => {
-    if (window.confirm('Вы уверены, что хотите передать права организатора этому участнику?')) {
-      // Обновление организатора в родительском компоненте
-      const updatedEvent = {
-        ...event,
-        organizerId: newOrganizerId
-      };
-      
-      // Здесь мы должны обновить весь event, а не только participants
-      // Для этого используем updateEvent вместо updateParticipants
-      // Но так как мы его не передали, нужно добавить его в props компонента
-      // или обновить только необходимые поля
-      
-      // Самый простой вариант - перезагрузить страницу, чтобы пользователь заново зашел
-      // но мы просто покажем сообщение
-      alert('Права организатора переданы другому участнику. Обновите страницу.');
-    }
-    
-    setNewOrganizerIndex(null);
-  };
+  const isOrganizer = event.organizer === 'currentUser';
 
   return (
-    <div className="participants-tab">
+    <div className="tab-container">
       <div className="tab-header">
-        <h2>Участники мероприятия</h2>
+        <h2>Участники</h2>
       </div>
-      
-      <div className="invite-link-container card">
-        <p>Ссылка для приглашения участников:</p>
-        <div className="invite-link-box">
-          <input 
-            type="text" 
-            value={inviteLink} 
-            readOnly 
-            className="form-control"
-          />
-          <button className="btn btn-secondary copy-link-btn" onClick={handleCopyLink}>
-            Копировать
-          </button>
-        </div>
-      </div>
-      
-      <div className="participants-list card">
-        <h3>Список участников ({event.participants.length})</h3>
-        
-        <div className="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>№</th>
-                <th>Участник</th>
-                <th>Роль</th>
-                {isOrganizer && <th>Действия</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {event.participants.map((participant, index) => (
-                <tr key={participant} className={participant === currentUser ? 'current-user' : ''}>
-                  <td>{index + 1}</td>
-                  <td>
-                    {participant === currentUser ? 'Я' : `Участник ${participant}`}
+
+      <div className="table-container participants-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Участник</th>
+              <th>Роль</th>
+              {isOrganizer && <th>Действия</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {participants.map((participantId, index) => {
+              const isCurrentOrganizer = participantId === event.organizer;
+              return (
+                <tr key={participantId}>
+                  <td className="participant-name">
+                    <div>{index + 1}. {getParticipantName(participantId)}</div>
                   </td>
-                  <td>
-                    {participant === event.organizerId ? 'Организатор' : 'Участник'}
-                  </td>
+                  <td>{isCurrentOrganizer ? 'Организатор' : 'Участник'}</td>
                   {isOrganizer && (
                     <td className="actions-cell">
-                      {participant !== event.organizerId && participant !== currentUser && (
+                      {participantId !== 'currentUser' && (
                         <>
-                          <button 
-                            className="btn-icon make-organizer"
-                            onClick={() => toggleOrganizeChange(index)}
-                            title="Назначить организатором"
-                          >
-                            👑
-                          </button>
-                          
-                          {newOrganizerIndex === index && (
-                            <div className="confirm-dropdown">
-                              <p>Назначить организатором?</p>
-                              <div className="confirm-buttons">
-                                <button 
-                                  className="btn btn-secondary"
-                                  onClick={() => setNewOrganizerIndex(null)}
-                                >
-                                  Отмена
-                                </button>
-                                <button 
-                                  className="btn btn-primary"
-                                  onClick={() => handleChangeOrganizer(participant)}
-                                >
-                                  Подтвердить
-                                </button>
-                              </div>
-                            </div>
+                          {!isCurrentOrganizer && (
+                            <button 
+                              className="action-button"
+                              onClick={() => handleAssignOrganizer(participantId)}
+                              title="Назначить организатором"
+                            >
+                              👑
+                            </button>
                           )}
-                          
                           <button 
-                            className="btn-icon delete"
-                            onClick={() => handleRemoveParticipant(participant)}
+                            className="action-button delete"
+                            onClick={() => handleRemoveParticipant(participantId)}
                             title="Удалить участника"
                           >
-                            🗑️
+                            ✕
                           </button>
                         </>
                       )}
                     </td>
                   )}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="invite-section">
+        <h3>Пригласить участников</h3>
+        <p>Поделитесь ссылкой, чтобы пригласить новых участников в мероприятие.</p>
+        
+        <div className="invite-link-container">
+          <input 
+            type="text" 
+            className="invite-link-input" 
+            value={getEventInviteLink(eventId)} 
+            readOnly 
+          />
+          <button className="button" onClick={copyInviteLink}>
+            Копировать
+          </button>
         </div>
       </div>
     </div>

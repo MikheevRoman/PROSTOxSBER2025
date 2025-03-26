@@ -1,32 +1,92 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import './EventDetails.css';
-
-// Импорт компонентов вкладок
+import Header from '../common/Header';
+import Tabs from '../common/Tabs';
+import { getEventById, getEventInviteLink } from '../../services/eventService';
 import PurchasesTab from './Tabs/PurchasesTab';
 import MyContributionsTab from './Tabs/MyContributionsTab';
 import MyTasksTab from './Tabs/MyTasksTab';
 import ParticipantsTab from './Tabs/ParticipantsTab';
 import SummaryTab from './Tabs/SummaryTab';
+import './EventDetails.css';
 
-const EventDetails = ({ events, setEvents }) => {
+const EventDetails = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('purchases');
   const [event, setEvent] = useState(null);
+  const [activeTab, setActiveTab] = useState('purchases');
   const [loading, setLoading] = useState(true);
-  const currentUser = 'currentUser'; // Заглушка, в реальности будет ID пользователя
 
   useEffect(() => {
-    const foundEvent = events.find(e => e.id === eventId);
-    if (foundEvent) {
-      setEvent(foundEvent);
-    } else {
-      // В реальном приложении могли бы загрузить с сервера
-      navigate('/');
+    const loadEvent = () => {
+      const eventData = getEventById(eventId);
+      if (eventData) {
+        setEvent(eventData);
+      } else {
+        // Если мероприятие не найдено, перенаправляем на главную
+        navigate('/');
+      }
+      setLoading(false);
+    };
+
+    loadEvent();
+  }, [eventId, navigate]);
+
+  const handleEditEvent = () => {
+    navigate(`/event/${eventId}/edit`);
+  };
+
+  const handleAddPurchase = () => {
+    navigate(`/event/${eventId}/add-purchase`);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Дата не указана';
+    
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU', {
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getTabs = () => {
+    const tabs = [
+      { id: 'purchases', label: 'Закупки' },
+      { id: 'contributions', label: 'Мои взносы' },
+      { id: 'tasks', label: 'Мои задачи' },
+      { id: 'participants', label: 'Участники' },
+    ];
+
+    // Вкладка "Итоги" доступна только организатору
+    if (event && event.isOrganizer) {
+      tabs.push({ id: 'summary', label: 'Итоги' });
     }
-    setLoading(false);
-  }, [eventId, events, navigate]);
+
+    return tabs;
+  };
+
+  const renderTabContent = () => {
+    if (!event) return null;
+
+    switch (activeTab) {
+      case 'purchases':
+        return <PurchasesTab event={event} onAddPurchase={handleAddPurchase} />;
+      case 'contributions':
+        return <MyContributionsTab event={event} />;
+      case 'tasks':
+        return <MyTasksTab event={event} />;
+      case 'participants':
+        return <ParticipantsTab event={event} />;
+      case 'summary':
+        return event.isOrganizer ? <SummaryTab event={event} /> : null;
+      default:
+        return <PurchasesTab event={event} onAddPurchase={handleAddPurchase} />;
+    }
+  };
 
   if (loading) {
     return <div className="loading">Загрузка...</div>;
@@ -36,141 +96,56 @@ const EventDetails = ({ events, setEvents }) => {
     return <div className="error">Мероприятие не найдено</div>;
   }
 
-  const isOrganizer = event.organizerId === currentUser;
-  const userRole = isOrganizer ? 'Организатор' : 'Участник';
-
-  // Обновление всего события в родительском состоянии
-  const updateEvent = (updatedEvent) => {
-    setEvent(updatedEvent);
-    setEvents(prevEvents => prevEvents.map(e => 
-      e.id === updatedEvent.id ? updatedEvent : e
-    ));
-  };
-
-  // Обновление только списка закупок
-  const updatePurchases = (purchases) => {
-    const updatedEvent = { ...event, purchases };
-    updateEvent(updatedEvent);
-  };
-
-  // Обновление списка участников
-  const updateParticipants = (participants) => {
-    const updatedEvent = { ...event, participants };
-    updateEvent(updatedEvent);
-  };
-
-  const goBack = () => {
-    navigate('/');
-  };
-
   return (
     <div className="event-details-container">
-      <header className="event-header">
-        <div className="event-header-top">
-          <button className="back-button" onClick={goBack}>
-            ← Назад
-          </button>
-          <h1 className="event-title">{event.title}</h1>
-          <span className="user-role">{userRole}</span>
-        </div>
+      <Header 
+        title={event.title}
+        showBackButton={true}
+        actionButton={
+          event.isOrganizer && (
+            <button className="button secondary" onClick={handleEditEvent}>
+              Редактировать
+            </button>
+          )
+        }
+      />
+
+      <div className="event-summary">
         <div className="event-info">
-          <div className="info-item">
-            <span className="info-label">Дата:</span>
-            <span className="info-value">{event.date}</span>
-          </div>
-          <div className="info-item">
-            <span className="info-label">Место:</span>
-            <span className="info-value">{event.location}</span>
-          </div>
+          <p className="event-date">
+            <span className="event-label">Дата:</span> {formatDate(event.date)}
+          </p>
+          {event.location && (
+            <p className="event-location">
+              <span className="event-label">Место:</span> {event.location}
+            </p>
+          )}
           {event.budget && (
-            <div className="info-item">
-              <span className="info-label">Бюджет:</span>
-              <span className="info-value">{event.budget} ₽</span>
-            </div>
+            <p className="event-budget">
+              <span className="event-label">Бюджет:</span> {event.budget} руб.
+            </p>
           )}
-          {event.notes && (
-            <div className="info-item">
-              <span className="info-label">Примечание:</span>
-              <span className="info-value">{event.notes}</span>
-            </div>
+          {event.note && (
+            <p className="event-note">
+              <span className="event-label">Примечание:</span> {event.note}
+            </p>
           )}
+          <p className="event-status">
+            <span className={`status-badge ${event.isOrganizer ? 'organizer' : 'participant'}`}>
+              {event.isOrganizer ? 'Организатор' : 'Участник'}
+            </span>
+          </p>
         </div>
-      </header>
+      </div>
 
-      <div className="tabs-container">
-        <div className="tabs">
-          <div 
-            className={`tab ${activeTab === 'purchases' ? 'active' : ''}`}
-            onClick={() => setActiveTab('purchases')}
-          >
-            Закупки
-          </div>
-          <div 
-            className={`tab ${activeTab === 'contributions' ? 'active' : ''}`}
-            onClick={() => setActiveTab('contributions')}
-          >
-            Мои взносы
-          </div>
-          <div 
-            className={`tab ${activeTab === 'tasks' ? 'active' : ''}`}
-            onClick={() => setActiveTab('tasks')}
-          >
-            Мои задачи
-          </div>
-          <div 
-            className={`tab ${activeTab === 'participants' ? 'active' : ''}`}
-            onClick={() => setActiveTab('participants')}
-          >
-            Участники
-          </div>
-          {isOrganizer && (
-            <div 
-              className={`tab ${activeTab === 'summary' ? 'active' : ''}`}
-              onClick={() => setActiveTab('summary')}
-            >
-              Итоги
-            </div>
-          )}
-        </div>
+      <Tabs 
+        tabs={getTabs()}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
 
-        <div className="tab-content">
-          {activeTab === 'purchases' && (
-            <PurchasesTab 
-              event={event} 
-              updatePurchases={updatePurchases} 
-              isOrganizer={isOrganizer}
-              currentUser={currentUser}
-            />
-          )}
-          {activeTab === 'contributions' && (
-            <MyContributionsTab 
-              event={event} 
-              updatePurchases={updatePurchases}
-              currentUser={currentUser}
-            />
-          )}
-          {activeTab === 'tasks' && (
-            <MyTasksTab 
-              event={event} 
-              updatePurchases={updatePurchases}
-              currentUser={currentUser}
-            />
-          )}
-          {activeTab === 'participants' && (
-            <ParticipantsTab 
-              event={event} 
-              updateParticipants={updateParticipants}
-              isOrganizer={isOrganizer}
-              currentUser={currentUser}
-            />
-          )}
-          {activeTab === 'summary' && isOrganizer && (
-            <SummaryTab 
-              event={event} 
-              updateEvent={updateEvent}
-            />
-          )}
-        </div>
+      <div className="tab-content">
+        {renderTabContent()}
       </div>
     </div>
   );

@@ -1,10 +1,22 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Header from '../common/Header';
+import { getEvents } from '../../services/eventService';
 import './EventList.css';
 
-const EventList = ({ events }) => {
+const EventList = () => {
+  const [events, setEvents] = useState([]);
   const navigate = useNavigate();
-  const currentUser = 'currentUser'; // В реальности будет ID текущего пользователя из авторизации
+
+  useEffect(() => {
+    // Загрузка списка мероприятий
+    const loadEvents = () => {
+      const eventsList = getEvents();
+      setEvents(eventsList);
+    };
+
+    loadEvents();
+  }, []);
 
   const handleCreateEvent = () => {
     navigate('/create-event');
@@ -14,54 +26,67 @@ const EventList = ({ events }) => {
     navigate(`/event/${eventId}`);
   };
 
-  const getUserRole = (event) => {
-    const isOrganizer = event.organizerId === currentUser;
-    return {
-      text: isOrganizer ? 'Организатор' : 'Участник',
-      className: isOrganizer ? 'organizer' : 'participant'
-    };
+  const renderEventStatus = (event) => {
+    return event.isOrganizer ? 'Организатор' : 'Участник';
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Дата не указана';
+    
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU', {
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   return (
     <div className="event-list-container">
-      <header className="event-list-header">
-        <h1>Мои мероприятия</h1>
-        <button 
-          className="btn create-event-btn" 
-          onClick={handleCreateEvent}
-        >
-          Создать мероприятие
-        </button>
-      </header>
+      <Header 
+        title="Мероприятия" 
+        actionButton={
+          <button className="button" onClick={handleCreateEvent}>
+            Создать мероприятие
+          </button>
+        }
+      />
 
-      <div className="events-grid">
-        {events.length > 0 ? (
-          events.map(event => {
-            const role = getUserRole(event);
-            return (
-              <div 
-                key={event.id} 
-                className="event-card card" 
-                onClick={() => handleEventClick(event.id)}
-              >
-                <div className={`event-role ${role.className}`}>{role.text}</div>
-                <h2 className="event-title">{event.title}</h2>
-                <div className="event-details">
-                  <div className="event-date">
-                    <span className="event-icon">📅</span> {event.date}
-                  </div>
-                  <div className="event-location">
-                    <span className="event-icon">📍</span> {event.location}
-                  </div>
+      <div className="event-list">
+        {events.length === 0 ? (
+          <div className="empty-state">
+            <p>У вас пока нет мероприятий</p>
+            <button className="button" onClick={handleCreateEvent}>
+              Создать мероприятие
+            </button>
+          </div>
+        ) : (
+          events.map(event => (
+            <div 
+              key={event.id} 
+              className="event-card card"
+              onClick={() => handleEventClick(event.id)}
+            >
+              <h2 className="event-title">{event.title}</h2>
+              <div className="event-details">
+                <p className="event-date">
+                  <span className="event-label">Дата:</span> {formatDate(event.date)}
+                </p>
+                {event.location && (
+                  <p className="event-location">
+                    <span className="event-label">Место:</span> {event.location}
+                  </p>
+                )}
+                <div className="event-status">
+                  <span className={`status-badge ${event.isOrganizer ? 'organizer' : 'participant'}`}>
+                    {renderEventStatus(event)}
+                  </span>
                 </div>
               </div>
-            );
-          })
-        ) : (
-          <div className="no-events">
-            <p>У вас пока нет мероприятий</p>
-            <p>Нажмите "Создать мероприятие", чтобы начать</p>
-          </div>
+            </div>
+          ))
         )}
       </div>
     </div>

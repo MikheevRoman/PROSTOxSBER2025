@@ -1,217 +1,246 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import './TabStyles.css';
 
-const SummaryTab = ({ event, updateEvent }) => {
-  const [transferTemplate, setTransferTemplate] = useState('');
-  const [savedTemplate, setSavedTemplate] = useState(event.transferTemplate || '');
-  const [expenseCalculation, setExpenseCalculation] = useState([]);
-  const [showCalculation, setShowCalculation] = useState(false);
-  
-  // Сохранение шаблона перевода
-  const handleSaveTemplate = () => {
-    if (transferTemplate.trim()) {
-      setSavedTemplate(transferTemplate);
-      
-      // Обновление шаблона в объекте события
-      const updatedEvent = {
-        ...event,
-        transferTemplate: transferTemplate
-      };
-      
-      updateEvent(updatedEvent);
+const SummaryTab = ({ event }) => {
+  const { eventId } = useParams();
+  const [template, setTemplate] = useState('');
+  const [savedTemplate, setSavedTemplate] = useState('');
+  const [participantSummary, setParticipantSummary] = useState([]);
+  const [calculationDone, setCalculationDone] = useState(false);
+
+  useEffect(() => {
+    // В реальном приложении здесь можно было бы загрузить сохраненный шаблон
+    const savedTemplateFromStorage = localStorage.getItem(`template_${eventId}`);
+    if (savedTemplateFromStorage) {
+      setSavedTemplate(savedTemplateFromStorage);
+      setTemplate(savedTemplateFromStorage);
+    } else {
+      // Предустановленный шаблон
+      const defaultTemplate = 'Привет! Прошу перевести {amount} руб. за мероприятие "{eventTitle}". Реквизиты: Сбербанк 1234 5678 9012 3456.';
+      setTemplate(defaultTemplate);
     }
+  }, [eventId]);
+
+  const handleTemplateChange = (e) => {
+    setTemplate(e.target.value);
   };
 
-  // Расчет расходов и взносов
+  const saveTemplate = () => {
+    localStorage.setItem(`template_${eventId}`, template);
+    setSavedTemplate(template);
+    alert('Шаблон сохранен!');
+  };
+
+  // Расчет итогов мероприятия
   const calculateExpenses = () => {
-    const participants = event.participants;
-    const purchases = event.purchases || [];
+    if (!event || !event.purchases) return;
+
+    // Получаем всех участников
+    const allParticipants = [...event.participants];
     
-    // Считаем общую сумму затрат
-    const totalExpenses = purchases.reduce((sum, item) => {
-      return sum + (item.cost || 0);
+    // Расчет общих затрат
+    const totalExpenses = event.purchases.reduce((sum, purchase) => {
+      return sum + (purchase.cost ? parseFloat(purchase.cost) : 0);
     }, 0);
     
-    // Вычисляем долю каждого участника
-    const perPersonShare = totalExpenses / participants.length;
+    // Расчет затрат по каждому участнику
+    const participantExpenses = {};
     
-    // Подсчитываем, сколько потратил каждый участник
-    const participantExpenses = participants.map(participantId => {
-      // Находим все закупки, где человек является ответственным
-      const personalExpenses = purchases
-        .filter(p => p.responsible === participantId)
-        .reduce((sum, purchase) => sum + (purchase.cost || 0), 0);
-      
-      // Вычисляем разницу между долей и затратами
-      const difference = perPersonShare - personalExpenses;
-      
-      return {
-        id: participantId,
-        totalSpent: personalExpenses,
-        share: perPersonShare,
-        difference: difference,
-        settled: false
+    // Инициализация затрат для каждого участника
+    allParticipants.forEach(participant => {
+      participantExpenses[participant] = {
+        spent: 0,
+        share: 0,
+        diff: 0,
+        paid: false
       };
     });
     
-    setExpenseCalculation(participantExpenses);
-    setShowCalculation(true);
-  };
-
-  // Переключение статуса расчета с участником
-  const toggleSettled = (participantId) => {
-    setExpenseCalculation(prevCalculation => {
-      return prevCalculation.map(p => {
-        if (p.id === participantId) {
-          return { ...p, settled: !p.settled };
-        }
-        return p;
-      });
+    // Расчет затрат каждого участника
+    event.purchases.forEach(purchase => {
+      if (!purchase.cost) return;
+      
+      const cost = parseFloat(purchase.cost);
+      
+      // Если известен ответственный, учитываем его затраты
+      if (purchase.responsible && purchase.responsible in participantExpenses) {
+        participantExpenses[purchase.responsible].spent += cost;
+      }
+      
+      // Расчет доли каждого участника в затратах
+      let contributors = [];
+      if (purchase.contributors === 'all') {
+        contributors = [...allParticipants];
+      } else if (purchase.contributors && Array.isArray(purchase.contributors)) {
+        contributors = purchase.contributors;
+      }
+      
+      if (contributors.length > 0) {
+        const sharePerPerson = cost / contributors.length;
+        contributors.forEach(contributor => {
+          if (contributor in participantExpenses) {
+            participantExpenses[contributor].share += sharePerPerson;
+          }
+        });
+      }
     });
+    
+    // Расчет разницы между потраченным и долей
+    Object.keys(participantExpenses).forEach(participant => {
+      const spent = participantExpenses[participant].spent;
+      const share = participantExpenses[participant].share;
+      participantExpenses[participant].diff = spent - share;
+    });
+    
+    // Формирование итогового массива для отображения
+    const summary = Object.keys(participantExpenses).map(participant => ({
+      id: participant,
+      name: participant === 'currentUser' ? 'Вы (организатор)' : `Участник ${participant.substring(0, 5)}`,
+      spent: participantExpenses[participant].spent,
+      share: participantExpenses[participant].share,
+      diff: participantExpenses[participant].diff,
+      paid: participantExpenses[participant].paid
+    }));
+    
+    setParticipantSummary(summary);
+    setCalculationDone(true);
   };
 
-  // Генерация текста сообщения для пользователя
-  const generateMessageText = (participant) => {
-    if (!savedTemplate) {
-      return `Привет! Твоя доля затрат на мероприятие "${event.title}" составляет ${participant.share.toFixed(2)} ₽. Пожалуйста, переведи ${Math.abs(participant.difference).toFixed(2)} ₽ организатору.`;
-    }
-    
-    let message = savedTemplate;
-    message = message.replace(/{eventTitle}/g, event.title);
-    message = message.replace(/{share}/g, participant.share.toFixed(2));
-    message = message.replace(/{amount}/g, Math.abs(participant.difference).toFixed(2));
-    
-    return message;
+  const handlePaymentStatusChange = (participantId, isPaid) => {
+    setParticipantSummary(prevSummary => 
+      prevSummary.map(p => 
+        p.id === participantId ? { ...p, paid: isPaid } : p
+      )
+    );
   };
 
-  // Копирование сообщения с шаблоном
-  const copyMessage = (participant) => {
-    const message = generateMessageText(participant);
+  const copyMessageToClipboard = (participant) => {
+    if (!participant || !savedTemplate) return;
+    
+    const amount = Math.abs(participant.diff).toFixed(2);
+    const message = savedTemplate
+      .replace('{amount}', amount)
+      .replace('{eventTitle}', event.title);
     
     navigator.clipboard.writeText(message)
       .then(() => {
-        alert('Сообщение скопировано в буфер обмена!');
+        alert('Сообщение скопировано в буфер обмена');
       })
       .catch(err => {
         console.error('Не удалось скопировать сообщение: ', err);
       });
   };
 
-  // Отправка сообщения в Телеграм
-  const sendTelegramMessage = (participant) => {
-    const message = generateMessageText(participant);
-    const encodedMessage = encodeURIComponent(message);
+  const sendMessageToTelegram = (participant) => {
+    if (!participant || !savedTemplate) return;
     
-    // Открываем Telegram в новой вкладке с подготовленным сообщением
-    window.open(`https://t.me/share/url?url=${encodedMessage}`, '_blank');
+    const amount = Math.abs(participant.diff).toFixed(2);
+    const message = encodeURIComponent(
+      savedTemplate
+        .replace('{amount}', amount)
+        .replace('{eventTitle}', event.title)
+    );
+    
+    const telegramUrl = `https://t.me/share/url?url=${message}`;
+    window.open(telegramUrl, '_blank');
   };
 
   return (
-    <div className="summary-tab">
+    <div className="tab-container">
       <div className="tab-header">
         <h2>Итоги мероприятия</h2>
       </div>
-      
-      <div className="template-section card">
-        <h3>Шаблон для переводов</h3>
-        <p className="hint">
-          Вы можете создать шаблон с данными для перевода. Доступные переменные: {'{eventTitle}'}, {'{share}'}, {'{amount}'}
-        </p>
-        
-        <div className="template-input">
-          <textarea
-            className="form-control"
-            rows="4"
-            value={transferTemplate}
-            onChange={(e) => setTransferTemplate(e.target.value)}
-            placeholder="Пример: Привет! Твоя доля затрат на мероприятие &quot;{eventTitle}&quot; составляет {share} ₽. Пожалуйста, переведи {amount} ₽ на карту 1234 5678 9012 3456."
-          ></textarea>
-          
-          <button className="btn btn-primary" onClick={handleSaveTemplate}>
-            Сохранить шаблон
-          </button>
-        </div>
+
+      <div className="template-form">
+        <h3>Шаблон сообщения для перевода средств</h3>
+        <p>Используйте {'{amount}'} для суммы и {'{eventTitle}'} для названия мероприятия</p>
+        <textarea
+          value={template}
+          onChange={handleTemplateChange}
+          placeholder="Введите шаблон сообщения для перевода средств"
+        />
+        <button className="button" onClick={saveTemplate}>
+          Сохранить шаблон
+        </button>
         
         {savedTemplate && (
           <div className="saved-template">
-            <h4>Сохраненный шаблон:</h4>
-            <div className="template-preview card">
-              {savedTemplate}
-            </div>
+            <h4>Текущий шаблон:</h4>
+            <p>{savedTemplate}</p>
           </div>
         )}
       </div>
-      
-      <div className="expense-calculation card">
-        <div className="expense-header">
-          <h3>Расчет расходов и взносов</h3>
-          <button 
-            className="btn btn-primary" 
-            onClick={calculateExpenses}
-          >
-            Рассчитать расходы
+
+      <div className="calculate-expenses">
+        <div className="tab-header">
+          <h3>Расчет расходов</h3>
+          <button className="button" onClick={calculateExpenses}>
+            Рассчитать
           </button>
         </div>
-        
-        {showCalculation && expenseCalculation.length > 0 && (
-          <div className="calculation-results">
-            <div className="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th>Участник</th>
-                    <th>Потрачено</th>
-                    <th>Доля</th>
-                    <th>Перевод</th>
-                    <th>Действия</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {expenseCalculation.map(participant => (
-                    <tr key={participant.id} className={participant.settled ? 'settled' : ''}>
-                      <td>
+
+        {calculationDone && participantSummary.length > 0 && (
+          <div className="table-container summary-table">
+            <table>
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Участник</th>
+                  <th>Потрачено</th>
+                  <th>Доля</th>
+                  <th>Сумма перевода</th>
+                  <th>Действия</th>
+                </tr>
+              </thead>
+              <tbody>
+                {participantSummary.map((participant) => (
+                  <tr key={participant.id} className="participant-row">
+                    <td>
+                      {participant.diff < 0 && (
                         <input
                           type="checkbox"
-                          checked={participant.settled}
-                          onChange={() => toggleSettled(participant.id)}
+                          checked={participant.paid}
+                          onChange={(e) => handlePaymentStatusChange(participant.id, e.target.checked)}
                         />
-                      </td>
-                      <td>{participant.id === 'currentUser' ? 'Я (организатор)' : `Участник ${participant.id}`}</td>
-                      <td>{participant.totalSpent.toFixed(2)} ₽</td>
-                      <td>{participant.share.toFixed(2)} ₽</td>
-                      <td className={participant.difference > 0 ? 'positive' : (participant.difference < 0 ? 'negative' : '')}>
-                        {participant.difference === 0 ? 'Нет' : (
-                          participant.difference > 0 
-                            ? `Получить ${participant.difference.toFixed(2)} ₽` 
-                            : `Отправить ${Math.abs(participant.difference).toFixed(2)} ₽`
-                        )}
-                      </td>
-                      <td className="actions-cell">
-                        {participant.difference < 0 && (
-                          <>
-                            <button 
-                              className="btn-icon copy"
-                              onClick={() => copyMessage(participant)}
-                              title="Копировать сообщение"
-                            >
-                              📋
-                            </button>
-                            <button 
-                              className="btn-icon telegram"
-                              onClick={() => sendTelegramMessage(participant)}
-                              title="Отправить в Telegram"
-                            >
-                              ✈️
-                            </button>
-                          </>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      )}
+                    </td>
+                    <td>{participant.name}</td>
+                    <td>{participant.spent.toFixed(2)} руб.</td>
+                    <td>{participant.share.toFixed(2)} руб.</td>
+                    <td>
+                      {participant.diff === 0 ? (
+                        'Не требуется'
+                      ) : participant.diff > 0 ? (
+                        <span className="positive">+{participant.diff.toFixed(2)} руб.</span>
+                      ) : (
+                        <span className="negative">{participant.diff.toFixed(2)} руб.</span>
+                      )}
+                    </td>
+                    <td>
+                      {participant.diff < 0 && participant.id !== 'currentUser' && (
+                        <div className="transfer-actions">
+                          <button 
+                            className="button secondary"
+                            onClick={() => copyMessageToClipboard(participant)}
+                            title="Копировать сообщение"
+                          >
+                            Копировать
+                          </button>
+                          <button 
+                            className="button secondary"
+                            onClick={() => sendMessageToTelegram(participant)}
+                            title="Отправить в Telegram"
+                          >
+                            Telegram
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
