@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Header from '../common/Header';
-import { getEventById, updateEvent } from '../../services/eventService';
+import Header from '../../common/Header';
+import { getEventById, updateEvent } from '../../../services/eventService';
 import './EditEvent.css';
 
 const EditEvent = () => {

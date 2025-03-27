@@ -1,11 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import EventList from './components/EventList/EventList';
-import CreateEvent from './components/CreateEvent/CreateEvent';
-import EventDetails from './components/EventDetails/EventDetails';
-import EditEvent from './components/EditEvent/EditEvent';
-import AddPurchase from './components/Purchases/AddPurchase';
+import EventList from './components/pages/EventList/EventList';
+import CreateEvent from './components/pages/CreateEvent/CreateEvent';
+import EventDetails from './components/pages/EventDetails/EventDetails';
+import EditEvent from './components/pages/EditEvent/EditEvent';
+import AddPurchase from './components/pages/Purchases/AddPurchase';
 
 function App() {
   return (

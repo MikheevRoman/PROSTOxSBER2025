@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../common/Header';
-import { createEvent, getEventInviteLink } from '../../services/eventService';
+import Header from '../../common/Header';
+import { createEvent, getEventInviteLink } from '../../../services/eventService';
 import './CreateEvent.css';
 
 const CreateEvent = () => {
