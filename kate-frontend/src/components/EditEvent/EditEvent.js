@@ -18,8 +18,8 @@ const EditEvent = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadEvent = () => {
-      const eventData = getEventById(eventId);
+    const loadEvent = async () => {
+      const eventData = await getEventById(eventId);
       if (eventData) {
         // Разделение даты и времени
         let dateValue = '';

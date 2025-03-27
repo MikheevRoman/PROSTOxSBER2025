@@ -10,8 +10,8 @@ const EventList = () => {
 
   useEffect(() => {
     // Загрузка списка мероприятий
-    const loadEvents = () => {
-      const eventsList = getEvents();
+    const loadEvents = async () => {
+      const eventsList = await getEvents();
       setEvents(eventsList);
     };
 
@@ -55,7 +55,7 @@ const EventList = () => {
       />
 
       <div className="event-list">
-        {events.length === 0 ? (
+        {!events || events.length === 0 ? (
           <div className="empty-state">
             <p>У вас пока нет мероприятий</p>
             <button className="button" onClick={handleCreateEvent}>
@@ -69,7 +69,7 @@ const EventList = () => {
               className="event-card card"
               onClick={() => handleEventClick(event.id)}
             >
-              <h2 className="event-title">{event.title}</h2>
+              <h2 className="event-title">{event.name}</h2>
               <div className="event-details">
                 <p className="event-date">
                   <span className="event-label">Дата:</span> {formatDate(event.date)}

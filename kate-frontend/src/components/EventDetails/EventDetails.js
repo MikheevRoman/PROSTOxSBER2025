@@ -18,8 +18,8 @@ const EventDetails = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadEvent = () => {
-      const eventData = getEventById(eventId);
+    const loadEvent = async () => {
+      const eventData = await getEventById(eventId);
       if (eventData) {
         setEvent(eventData);
       } else {
@@ -99,7 +99,7 @@ const EventDetails = () => {
   return (
     <div className="event-details-container">
       <Header 
-        title={event.title}
+        title={event.name}
         showBackButton={true}
         actionButton={
           event.isOrganizer && (

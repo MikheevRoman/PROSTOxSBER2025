@@ -1,38 +1,38 @@
+import {v4} from "uuid";
+import axios from "axios";
+
 // Сервис для работы с данными о мероприятиях
 const EVENTS_KEY = 'kate_events';
 
+const API_BASE_URL = "https://prosto-sber-2025.gros.pro/api/company-events/test";
+
 // Генерация уникального ID
 const generateId = () => {
-  return Math.random().toString(36).substr(2, 9);
+  return v4();
 };
 
 // Получение всех мероприятий
-export const getEvents = () => {
-  const events = localStorage.getItem(EVENTS_KEY);
-  return events ? JSON.parse(events) : [];
-};
+export async function getEvents() {
+  return axios.get(API_BASE_URL).then(response => response.data);
+}
 
 // Получение мероприятия по ID
-export const getEventById = (eventId) => {
-  const events = getEvents();
-  return events.find(event => event.id === eventId);
-};
+export async function getEventById(eventId)  {
+  return axios.get(API_BASE_URL + "/" + eventId.toString()).then(response => response.data);
+}
 
 // Создание нового мероприятия
 export const createEvent = (eventData) => {
-  const events = getEvents();
   const newEvent = {
-    id: generateId(),
-    ...eventData,
-    createdAt: new Date().toISOString(),
-    organizer: 'currentUser', // В реальном приложении здесь будет ID текущего пользователя
-    participants: ['currentUser'], // Организатор автоматически становится участником
-    purchases: [],
-    isOrganizer: true
-  };
-  
-  localStorage.setItem(EVENTS_KEY, JSON.stringify([...events, newEvent]));
-  return newEvent;
+    name: eventData
+  }
+
+  axios.post(API_BASE_URL, newEvent).then((response) =>
+  {
+    return response;
+  }).catch((error) => {
+    console.log(error);
+  });
 };
 
 // Обновление мероприятия
