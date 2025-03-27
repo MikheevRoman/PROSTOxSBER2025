@@ -25,7 +25,7 @@ const CreateEvent = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Объединение даты и времени, если они указаны
@@ -46,7 +46,7 @@ const CreateEvent = () => {
       note: formData.note || null,
     };
     
-    const newEvent = createEvent(eventData);
+    const newEvent = await createEvent(eventData);
     setCreatedEvent(newEvent);
     setEventCreated(true);
   };

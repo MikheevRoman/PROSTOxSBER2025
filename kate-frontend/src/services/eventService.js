@@ -4,6 +4,7 @@ import axios from "axios";
 // Сервис для работы с данными о мероприятиях
 const EVENTS_KEY = 'kate_events';
 
+// Путь к API. Должен быть без завершающего "/".
 const API_BASE_URL = "https://prosto-sber-2025.gros.pro/api/company-events/test";
 
 // Генерация уникального ID
@@ -22,9 +23,9 @@ export async function getEventById(eventId)  {
 }
 
 // Создание нового мероприятия
-export const createEvent = (eventData) => {
+export async function createEvent(eventData) {
   const newEvent = {
-    name: eventData
+    name: eventData.title
   }
 
   axios.post(API_BASE_URL, newEvent).then((response) =>
@@ -33,7 +34,7 @@ export const createEvent = (eventData) => {
   }).catch((error) => {
     console.log(error);
   });
-};
+}
 
 // Обновление мероприятия
 export const updateEvent = (eventId, eventData) => {
