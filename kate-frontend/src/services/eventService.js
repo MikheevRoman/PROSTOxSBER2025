@@ -12,12 +12,19 @@ const generateId = () => {
   return v4();
 };
 
-// Получение всех мероприятий
+/**
+ * Получение всех мероприятий
+ * @returns {Array} Массив объектов мероприятий
+ */
 export async function getEvents() {
   return axios.get(API_BASE_URL).then(response => response.data);
 }
 
-// Получение мероприятия по ID
+/**
+ * Получение мероприятия по ID
+ * @returns {Array} Массив объектов мероприятий
+ * @param eventId UUID мероприятия
+ */
 export async function getEventById(eventId)  {
   return axios.get(API_BASE_URL + "/" + eventId.toString()).then(response => response.data);
 }
@@ -26,14 +33,13 @@ export async function getEventById(eventId)  {
 export async function createEvent(eventData) {
   const newEvent = {
     name: eventData.title
-  }
+  };
 
-  axios.post(API_BASE_URL, newEvent).then((response) =>
-  {
-    return response;
-  }).catch((error) => {
-    console.log(error);
-  });
+  return axios.post(API_BASE_URL, newEvent)
+      .then((response) => response.data)
+      .catch((error) => {
+        console.log(error);
+      });
 }
 
 // Обновление мероприятия
