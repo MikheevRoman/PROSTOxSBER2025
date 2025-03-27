@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../common/Header';
-import { getEvents } from '../../../services/eventService';
+import {deleteEvent, getEvents} from '../../../services/eventService';
 import './EventList.css';
 
 const EventList = () => {
   const [events, setEvents] = useState([]);
   const navigate = useNavigate();
 
+  const loadEvents = async () => {
+    const eventsList = await getEvents();
+    setEvents(eventsList);
+  };
+
   useEffect(() => {
     // Загрузка списка мероприятий
-    const loadEvents = async () => {
-      const eventsList = await getEvents();
-      setEvents(eventsList);
-    };
-
     loadEvents();
   }, []);
 
@@ -25,6 +25,12 @@ const EventList = () => {
   const handleEventClick = (eventId) => {
     navigate(`/event/${eventId}`);
   };
+
+  const handleDeleteEvent = async (clickEvent, eventId) => {
+    clickEvent.stopPropagation();
+    await deleteEvent(eventId);
+    await loadEvents();
+  }
 
   const renderEventStatus = (event) => {
     return event.isOrganizer ? 'Организатор' : 'Участник';
@@ -84,6 +90,13 @@ const EventList = () => {
                     {renderEventStatus(event)}
                   </span>
                 </div>
+                {
+                  event.isOrganizer && (
+                    <button className="button" onClick={(e) => handleDeleteEvent(e, event.id)}>
+                      Удалить
+                    </button>
+                  )
+                }
               </div>
             </div>
           ))

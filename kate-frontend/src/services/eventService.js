@@ -42,6 +42,15 @@ export async function createEvent(eventData) {
       });
 }
 
+/**
+ * Удаление мероприятия по ID
+ * @returns {Array} Массив объектов мероприятий
+ * @param eventId UUID мероприятия
+ */
+export async function deleteEvent(eventId)  {
+  return axios.delete(API_BASE_URL + "/" + eventId.toString()).then(response => response.data);
+}
+
 // Обновление мероприятия
 export const updateEvent = (eventId, eventData) => {
   const events = getEvents();
