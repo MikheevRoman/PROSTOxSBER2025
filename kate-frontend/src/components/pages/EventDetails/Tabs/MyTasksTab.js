@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { updatePurchase } from '../../../services/eventService';
+import { updatePurchase } from '../../../../services/eventService';
 import './TabStyles.css';
 
 const MyTasksTab = ({ event }) => {

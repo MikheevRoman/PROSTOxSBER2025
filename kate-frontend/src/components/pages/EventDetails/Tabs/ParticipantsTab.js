@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getEventInviteLink, removeParticipant, assignNewOrganizer } from '../../../services/eventService';
+import { getEventInviteLink, removeParticipant, assignNewOrganizer } from '../../../../services/eventService';
 import './TabStyles.css';
 
 const ParticipantsTab = ({ event }) => {

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Header from '../common/Header';
-import Tabs from '../common/Tabs';
-import { getEventById, getEventInviteLink } from '../../services/eventService';
+import Header from '../../common/Header';
+import Tabs from '../../common/Tabs';
+import { getEventById, getEventInviteLink } from '../../../services/eventService';
 import PurchasesTab from './Tabs/PurchasesTab';
 import MyContributionsTab from './Tabs/MyContributionsTab';
 import MyTasksTab from './Tabs/MyTasksTab';
