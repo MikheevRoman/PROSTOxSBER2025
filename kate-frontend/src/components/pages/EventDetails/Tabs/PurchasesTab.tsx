@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { updatePurchase } from '../../../../services/eventService';
 import './TabStyles.css';
+import {UUID} from "node:crypto";
 
 const PurchasesTab = ({ event, onAddPurchase }) => {
-  const { eventId } = useParams();
+  const eventId = useParams() as unknown as UUID;
   const navigate = useNavigate();
   const [purchases, setPurchases] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -32,7 +33,7 @@ const PurchasesTab = ({ event, onAddPurchase }) => {
     navigate(`/event/${eventId}/edit-purchase/${purchaseId}`);
   };
 
-  const handleAddToContributors = (purchaseId, e) => {
+  const handleAddToContributors = async (purchaseId, e) => {
     e.stopPropagation();
     const purchase = purchases.find(p => p.id === purchaseId);
     if (!purchase) return;
@@ -52,7 +53,7 @@ const PurchasesTab = ({ event, onAddPurchase }) => {
       newContributors = ['currentUser'];
     }
 
-    updatePurchase(eventId, purchaseId, { contributors: newContributors });
+    await updatePurchase(eventId, purchaseId, { contributors: newContributors });
     
     // Обновление состояния в UI
     setPurchases(prevPurchases => 
@@ -336,10 +337,10 @@ const PurchasesTab = ({ event, onAddPurchase }) => {
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colSpan="2" className="total-row">
+                    <td colSpan={2} className="total-row">
                       <strong>Итого:</strong> {totalAmount} руб.
                     </td>
-                    <td colSpan="5">
+                    <td colSpan={5}>
                       {event.budget && (
                         <div className="budget-difference">
                           <strong>Разница с бюджетом:</strong> 

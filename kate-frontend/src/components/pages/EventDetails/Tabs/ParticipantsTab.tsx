@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getEventInviteLink, removeParticipant, assignNewOrganizer } from '../../../../services/eventService';
 import './TabStyles.css';
+import {UUID} from "node:crypto";
 
 const ParticipantsTab = ({ event }) => {
-  const { eventId } = useParams();
+  const eventId = useParams() as unknown as UUID;
   const [participants, setParticipants] = useState(event.participants || []);
 
   const handleRemoveParticipant = (participantId) => {

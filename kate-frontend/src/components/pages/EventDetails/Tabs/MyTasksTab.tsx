@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { updatePurchase } from '../../../../services/eventService';
 import './TabStyles.css';
+import {UUID} from "node:crypto";
 
 const MyTasksTab = ({ event }) => {
-  const { eventId } = useParams();
+  const eventId = useParams() as unknown as UUID;
   const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
