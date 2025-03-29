@@ -20,28 +20,14 @@ const EditEvent = () => {
   useEffect(() => {
     const loadEvent = async () => {
       const eventData = await getEventById(user.id, eventId);
-      if (eventData) {
-        // Разделение даты и времени
-        let dateValue = '';
-        // let timeValue = '';
-        
-        // if (eventData.date) {
-        //   const dateObj = new Date(eventData.date);
-        //   dateValue = dateObj.toISOString().split('T')[0];
-        //
-        //   // Если в дате есть время
-        //   if (eventData.date.includes('T')) {
-        //     const timePart = eventData.date.split('T')[1];
-        //     timeValue = timePart.substring(0, 5); // Формат HH:MM
-        //   }
-        // }
 
+      if (eventData) {
         setFormData({
-          name: eventData.name,
-          date: dateValue,
-          place: eventData.place,
-          budget: eventData.budget,
-          comment: eventData.comment,
+          name: eventData?.name,
+          date: eventData?.date ? new Date(eventData.date).toISOString().slice(0, 16) : '',
+          place: eventData?.place,
+          budget: eventData?.budget,
+          comment: eventData?.comment,
         });
       } else {
         // Если мероприятие не найдено, перенаправляем на главную
@@ -51,7 +37,7 @@ const EditEvent = () => {
     };
 
     loadEvent();
-  }, [eventId, navigate]);
+  }, [eventId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -71,13 +57,13 @@ const EditEvent = () => {
       organizerTgUserId: user.id,
       id: v4() as UUID,
       name: formData?.name || "",
-      date: formData?.date ? Date.parse(formData?.date) as unknown as Date : Date.prototype,
+      date: formData?.date ? new Date(formData?.date) : Date.prototype,
       place: formData?.place || "",
       budget: formData?.budget || 0,
       comment: formData?.comment
     }
     
-    await updateEvent(user.id, eventId, eventFromForm);
+    await updateEvent(eventId, eventFromForm);
     navigate(`/event/${eventId}`);
   };
 
@@ -94,12 +80,12 @@ const EditEvent = () => {
 
       <form className="edit-event-form" onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="title">Название мероприятия*</label>
+          <label htmlFor="name">Название мероприятия*</label>
           <input
             type="text"
-            id="title"
-            name="title"
-            value={formData.name}
+            id="name"
+            name="name"
+            value={formData?.name}
             onChange={handleChange}
             required
             placeholder="Введите название мероприятия"
@@ -107,34 +93,23 @@ const EditEvent = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="date">Дата</label>
+          <label htmlFor="date">Дата и время</label>
           <input
-            type="date"
+            type="datetime-local"
             id="date"
             name="date"
-            value={formData.date}
+            value={formData?.date}
             onChange={handleChange}
           />
         </div>
 
-        {/*<div className="form-group">*/}
-        {/*  <label htmlFor="time">Время</label>*/}
-        {/*  <input*/}
-        {/*    type="time"*/}
-        {/*    id="time"*/}
-        {/*    name="time"*/}
-        {/*    value={formData.time}*/}
-        {/*    onChange={handleChange}*/}
-        {/*  />*/}
-        {/*</div>*/}
-
         <div className="form-group">
-          <label htmlFor="location">Место</label>
+          <label htmlFor="place">Место</label>
           <input
             type="text"
-            id="location"
-            name="location"
-            value={formData.place}
+            id="place"
+            name="place"
+            value={formData?.place}
             onChange={handleChange}
             placeholder="Укажите место проведения"
           />
@@ -146,7 +121,7 @@ const EditEvent = () => {
             type="number"
             id="budget"
             name="budget"
-            value={formData.budget}
+            value={formData?.budget}
             onChange={handleChange}
             placeholder="Укажите бюджет мероприятия"
             min="0"
@@ -154,11 +129,11 @@ const EditEvent = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="note">Примечание</label>
+          <label htmlFor="comment">Примечание</label>
           <textarea
-            id="note"
-            name="note"
-            value={formData.comment}
+            id="comment"
+            name="comment"
+            value={formData?.comment}
             onChange={handleChange}
             placeholder="Дополнительная информация"
             rows={3}

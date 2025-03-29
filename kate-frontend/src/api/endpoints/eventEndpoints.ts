@@ -3,6 +3,7 @@ import { UUID } from "node:crypto";
 import baseApi from "../../api/client";
 import EventEntity from "../../model/EventEntity";
 import ApiErrorResponse from "../../model/ApiErrorResponse";
+import EventFormData from "../../model/EventFormData";
 
 /**
  * Получение мероприятий пользователя
@@ -69,13 +70,20 @@ export async function deleteEvent(eventId: UUID): Promise<void> {
 
 /**
  * Обновление мероприятия
- * @param userId ID пользователя Telegram
  * @param eventId UUID мероприятия
  * @param eventData Новые данные мероприятия
  * @returns {Promise<EventEntity>}
  */
-export async function updateEvent(userId: number, eventId: UUID, eventData: EventEntity): Promise<EventEntity> {
-    return baseApi.put(`/company-events/users/${userId}/events/${eventId}`, eventData)
+export async function updateEvent(eventId: UUID, eventData: EventEntity): Promise<EventEntity> {
+    const eventUpdateDto: EventFormData = {
+        name: eventData.name,
+        date: eventData.date.toISOString().replace(/\.\d{3}Z$/, 'Z'), // см. createEvent()
+        place: eventData.place,
+        budget: eventData.budget,
+        comment: eventData.comment
+    };
+
+    return baseApi.patch(`/company-events/events/${eventId}`, eventUpdateDto)
         .then(response => response.data)
         .catch(error => {
             console.error("Error updating event:", error);

@@ -11,6 +11,7 @@ import {
 import Procurement, {CompletionStatus} from "../../../../model/Procurement";
 import {getEventParticipants} from "../../../../api/endpoints/participantsEndpoints";
 import Participant from "../../../../model/Participant";
+import {MenuItem, Select} from "@mui/material";
 
 const MyTasksTab = ({ event }) => {
   const eventId: UUID = (useParams()).eventId as UUID;
@@ -89,16 +90,14 @@ const MyTasksTab = ({ event }) => {
                     />
                   </td>
                   <td>
-                    <label className="task-status">
-                      <select
-                          value={task.completionStatus}
-                          onChange={(e) => handleTaskStatusChange(task.id, e.target.value as CompletionStatus)}
-                          className="task-status-select"
-                      >
-                        <option value={CompletionStatus.IN_PROGRESS}>В процессе</option>
-                        <option value={CompletionStatus.DONE}>Выполнено</option>
-                      </select>
-                    </label>
+                    <Select
+                        value={task.completionStatus}
+                        onChange={(e) => handleTaskStatusChange(task.id, e.target.value as CompletionStatus)}
+                        label="Status"
+                    >
+                      <MenuItem value={CompletionStatus.IN_PROGRESS}>В процессе</MenuItem>
+                      <MenuItem value={CompletionStatus.DONE}>Выполнено</MenuItem>
+                    </Select>
                   </td>
                 </tr>
               ))}
