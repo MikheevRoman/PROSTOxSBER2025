@@ -28,15 +28,12 @@ import java.util.List;
 public class EventServiceImpl extends DefaultServiceImpl<Event, EventCreateDto, EventUpdateDto, EventView, EventRepository, EventMapper> implements EventService {
 
     private final UserRepository userRepository;
-    private final ParticipantRepository participantRepository;
 
     public EventServiceImpl(@Qualifier("eventRepository") EventRepository eventRepository,
                             EventMapper eventMapper,
-                            UserRepository userRepository,
-                            ParticipantRepository participantRepository) {
+                            UserRepository userRepository) {
         super(eventRepository, eventMapper);
         this.userRepository = userRepository;
-        this.participantRepository = participantRepository;
     }
 
     @Override

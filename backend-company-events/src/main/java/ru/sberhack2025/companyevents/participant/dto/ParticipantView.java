@@ -19,11 +19,14 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ParticipantView implements DateFormatter {
 
-    @Schema(description = "Entity id (uuid)", example = "faf063f0-50d9-4251-89dd-be1487f73b9c")
+    @Schema(description = "Participant id (uuid)", example = "faf063f0-50d9-4251-89dd-be1487f73b9c")
     UUID id;
 
-    @Schema(description = "Entity name", example = "Masha")
+    @Schema(description = "Participant name", example = "Masha")
     String name;
+
+    @Schema(description = "Participant telegram user id", example = "433566788")
+    Long tgUserId;
 
     @Schema(description = "User creation time", example = "2024-07-14T11:12:13Z", format = INSTANT_PATTERN)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = INSTANT_PATTERN, timezone = "UTC")
