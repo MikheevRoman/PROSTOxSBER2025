@@ -55,7 +55,7 @@ const MyTasksTab = ({ event }) => {
         <h2>Задачи</h2>
       </div>
 
-      {tasks.length === 0 ? (
+      {tasks && tasks.length === 0 ? (
         <div className="empty-tab">
           <p>У вас пока нет задач</p>
         </div>

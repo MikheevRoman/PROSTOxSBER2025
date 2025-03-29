@@ -12,7 +12,7 @@ export async function getEventProcurements(eventId: UUID): Promise<Procurement[]
 }
 
 export async function getAssignedProcurementsForParticipant(participantId: UUID): Promise<Procurement[]> {
-    return await baseApi.get(`company-events/participant/${participantId}/procurements/responsible`)
+    return await baseApi.get(`company-events/participants/${participantId}/procurements/responsible`)
         .then(response => response.data)
         .catch(error => {
             console.error("Error adding participant:", error);
