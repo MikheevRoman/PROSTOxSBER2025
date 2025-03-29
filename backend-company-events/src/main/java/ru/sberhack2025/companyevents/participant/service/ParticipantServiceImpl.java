@@ -19,6 +19,9 @@ import ru.sberhack2025.companyevents.user.model.User;
 import ru.sberhack2025.companyevents.user.repository.UserRepository;
 import ru.sberhack2025.companyevents.user.service.UserServiceImpl;
 
+import java.util.List;
+import java.util.UUID;
+
 
 /**
  * @author Andrey Kurnosov
@@ -58,13 +61,23 @@ public class ParticipantServiceImpl implements ParticipantService {
         event.addParticipant(participant);
         repository.save(participant);
 
-        ParticipantView view = mapper.toView(participant);
         return toView(participant);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<ParticipantView> getAllByEvent(UUID eventId) {
+        Event event = eventRepository.find(eventId);
+        List<Participant> participants = repository.findByEventIdWithUser(event.getId());
+        return participants.stream().map(this::toView).toList();
+    }
+
+
     private ParticipantView toView(Participant participant) {
         ParticipantView view = mapper.toView(participant);
-        view.setName(participant.getUser().getName());
+        User user = participant.getUser();
+        view.setName(user.getName());
+        view.setTgUserId(user.getTgUserId());
         return view;
     }
 

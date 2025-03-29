@@ -10,6 +10,9 @@ import ru.sberhack2025.companyevents.participant.dto.ParticipantCreateDto;
 import ru.sberhack2025.companyevents.participant.dto.ParticipantView;
 import ru.sberhack2025.companyevents.participant.service.ParticipantServiceImpl;
 
+import java.util.List;
+import java.util.UUID;
+
 /**
  * @author Andrey Kurnosov
  */
@@ -31,5 +34,14 @@ public class ParticipantController {
     @ResponseStatus(HttpStatus.CREATED)
     public ParticipantView create(@Validated @RequestBody final ParticipantCreateDto createDto) {
         return participantService.create(createDto);
+    }
+
+    @Operation(
+            summary = "Получить всех участников мероприятия",
+            description = "Поиск по id мероприятия (uuid)"
+    )
+    @GetMapping("events/{eventId}/participants")
+    public List<ParticipantView> getAllByUser(@PathVariable UUID eventId) {
+        return participantService.getAllByEvent(eventId);
     }
 }

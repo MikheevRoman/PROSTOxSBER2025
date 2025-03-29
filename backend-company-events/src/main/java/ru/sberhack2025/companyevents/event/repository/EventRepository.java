@@ -22,5 +22,4 @@ public interface EventRepository extends DefaultRepository<Event> {
     @Query("SELECT e FROM Event e JOIN e.participants p WHERE p.user.tgUserId = :userId")
     List<Event> findEventsByTgUserId(@Param("userId") Long userId);
 
-
 }
