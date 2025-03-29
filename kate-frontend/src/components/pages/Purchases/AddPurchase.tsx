@@ -103,47 +103,6 @@ const AddPurchase = () => {
         title={isEditing ? "Редактирование закупки" : "Добавление закупки"} 
         showBackButton={true} 
       />
-      <div className="procurement-form-data">
-        <h2>Procurement Details</h2>
-
-        <div className="form-field">
-          <label>Name:</label>
-          <span>{formData?.name}</span>
-        </div>
-
-        <div className="form-field">
-          <label>Price:</label>
-          <span>${formData?.price.toString()}</span>
-        </div>
-
-        <div className="form-field">
-          <label>Comment:</label>
-          <p>{formData?.comment}</p>
-        </div>
-
-        <div className="form-field">
-          <label>Completion Status:</label>
-          <span className={`status-badge ${formData?.completionStatus.toLowerCase()}`}>
-      {formData?.completionStatus}
-    </span>
-        </div>
-
-        <div className="form-field">
-          <label>Fundraising Status:</label>
-          <span className={`status-badge ${formData?.fundraisingStatus.toLowerCase()}`}>
-      {formData?.fundraisingStatus}
-    </span>
-        </div>
-
-        <div className="form-field">
-          <label>Contributors ({formData?.contributors.length}):</label>
-          <ul className="contributors-list">
-            {formData?.contributors.map(id => (
-                <li key={id}>{id}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
       <form className="purchase-form" onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="name">Название</label>
