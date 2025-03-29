@@ -10,6 +10,7 @@ import {useTelegramAuth} from "../../../context/TelegramAuthContext";
 import {addProcurement, getProcurementById, updateProcurement} from "../../../api/endpoints/procurementEndpoints";
 import {getEventParticipants} from "../../../api/endpoints/participantsEndpoints";
 import Participant from "../../../model/Participant";
+import {Box, Chip, MenuItem, OutlinedInput, Select} from "@mui/material";
 
 const AddPurchase = () => {
   const eventId: UUID = (useParams()).eventId as UUID;
@@ -19,14 +20,16 @@ const AddPurchase = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<ProcurementFormData>();
   const [loading, setLoading] = useState(false);
-  const [participant, setParticipant] = useState<Participant>();
+  const [currentUserAsParticipant, setCurrentUserAsParticipant] = useState<Participant>();
+  const [participants, setParticipants] = useState<Participant[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       const eventParticipants = (await getEventParticipants(eventId));
+      setParticipants(eventParticipants as Participant[]);
       const participant = (eventParticipants as Participant[]).find(e => e.tgUserId === user.id);
-      setParticipant(participant);
+      setCurrentUserAsParticipant(participant);
 
       // Если это редактирование, загружаем данные покупки
       if (purchaseId) {
@@ -70,20 +73,25 @@ const AddPurchase = () => {
     }));
   };
 
+  const getParticipantNameById = (id: UUID): string => {
+    const participant = participants.find(p => p.id === id);
+    return participant?.name;
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     const purchaseData: Procurement = {
       id: v4() as UUID,
       name: formData.name,
       price: formData.price,
       comment: formData.comment,
-      responsibleId: participant.id,
+      responsibleId: currentUserAsParticipant.id,
       completionStatus: formData.completionStatus,
-      contributors: [], // List<Participant> // TODO: Implement
+      contributors: formData.contributors,
       fundraisingStatus: formData.fundraisingStatus
     };
-    
+    console.log(purchaseData);
     if (isEditing) {
       await updateProcurement(eventId, purchaseId, purchaseData);
     } else {
@@ -130,36 +138,61 @@ const AddPurchase = () => {
           />
         </div>
 
-        {/*<div className="form-group">*/}
-        {/*  <label htmlFor="responsible">Ответственный</label>*/}
-        {/*  <select*/}
-        {/*    id="responsible"*/}
-        {/*    name="responsible"*/}
-        {/*    value={formData.responsible}*/}
-        {/*    onChange={handleChange}*/}
-        {/*  >*/}
-        {/*    <option value="currentUser">Вы</option>*/}
-        {/*    {event.participants.filter(p => p !== 'currentUser').map(participant => (*/}
-        {/*      <option key={participant} value={participant}>*/}
-        {/*        {`Участник ${participant.substring(0, 5)}`}*/}
-        {/*      </option>*/}
-        {/*    ))}*/}
-        {/*  </select>*/}
-        {/*</div>*/}
-
         <div className="form-group">
-          <label htmlFor="contributors">Кто скидывается</label>
-          <select
+          <label htmlFor="contributors">Ответственный</label>
+          <Select
             id="contributors"
             name="contributors"
             value={formData?.contributors}
             onChange={handleChange}
+            input={<OutlinedInput label="Ответственный" />}
+            multiple
+            renderValue={(selected) => (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {selected.map((value) => (
+                      <Chip
+                          key={value}
+                          label={getParticipantNameById(value)}
+                      />
+                  ))}
+                </Box>
+            )}
           >
-            <option value="all">Все участники</option>
-            <option value="currentUser">Только вы</option>
-            {/* В реальном приложении здесь можно было бы добавить возможность выбора конкретных участников */}
-          </select>
+            {currentUserAsParticipant &&
+              <MenuItem key={currentUserAsParticipant.id} value={currentUserAsParticipant.id}>Вы</MenuItem>
+            }
+
+            {
+              participants.filter(p => p.id !== currentUserAsParticipant.id).map(participant => (
+              <MenuItem key={participant.id} value={participant.id}>
+                {`${participant.name}`}
+              </MenuItem >
+              ))
+            }
+          </Select>
         </div>
+
+
+        {/*{*/}
+        {/*  // Service code to diplay all current participants*/}
+        {/*  formData?.contributors.map(participant => (*/}
+        {/*        <div key={participant}>{participant}</div>*/}
+        {/*  ))*/}
+        {/*}*/}
+
+        {/*<div className="form-group">*/}
+        {/*  <label htmlFor="contributors">Кто скидывается</label>*/}
+        {/*  <select*/}
+        {/*    id="contributors"*/}
+        {/*    name="contributors"*/}
+        {/*    value={formData?.contributors}*/}
+        {/*    onChange={handleChange}*/}
+        {/*  >*/}
+        {/*    <option value="all">Все участники</option>*/}
+        {/*    <option value="currentUser">Только вы</option>*/}
+        {/*    /!* В реальном приложении здесь можно было бы добавить возможность выбора конкретных участников *!/*/}
+        {/*  </select>*/}
+        {/*</div>*/}
 
         {/*<div className="form-group">*/}
         {/*  <label htmlFor="collection">Сбор средств</label>*/}

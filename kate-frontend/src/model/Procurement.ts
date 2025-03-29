@@ -5,7 +5,7 @@ interface Procurement {
     name: string;
     price: number;
     comment: string;
-    responsibleId: string;
+    responsibleId: UUID;
     completionStatus: CompletionStatus;
     contributors: UUID[];
     fundraisingStatus: FundraisingStatus;

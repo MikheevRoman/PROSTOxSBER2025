@@ -10,6 +10,9 @@ import {
   getProcurementById,
   updateProcurement
 } from "../../../../api/endpoints/procurementEndpoints";
+import Participant from "../../../../model/Participant";
+import {getEventParticipants} from "../../../../api/endpoints/participantsEndpoints";
+import {Box, Chip} from "@mui/material";
 
 interface PurchasesProps {
   event: EventEntity;
@@ -27,11 +30,15 @@ const PurchasesTab = (props: PurchasesProps) => {
   const [budgetDifference, setBudgetDifference] = useState(0);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const { user } = useTelegramAuth();
+  const [participants, setParticipants] = useState<Participant[]>([]);
 
   async function loadProcurements() {
     if (event && event) {
       const procurements = await getEventProcurements(event.id);
       setPurchases(procurements);
+
+      const participantsData = await getEventParticipants(event.id) as Participant[];
+      setParticipants(participantsData);
 
       // Расчет общей суммы
       const total = procurements.reduce((sum, purchase) =>
@@ -116,6 +123,11 @@ const PurchasesTab = (props: PurchasesProps) => {
     }
   };
 
+  const getParticipantNameById = (id: UUID): string => {
+    const foundParticipant = participants.find(p => p.id === id);
+    return foundParticipant?.name;
+  };
+
   const isUserContributor = (purchase) => {
     if (purchase.contributors === 'all') return true;
     if (Array.isArray(purchase.contributors)) {
@@ -169,14 +181,13 @@ const PurchasesTab = (props: PurchasesProps) => {
     return null;
   };
 
-  const getContributorsText = (contributors) => {
-    if (contributors === 'all') return 'Все участники';
-    if (Array.isArray(contributors) && contributors.includes('currentUser')) {
-      if (contributors.length === 1) return 'Только вы';
-      return 'Вы и другие';
+  const getContributorsText = (contributors: UUID[]): string => {
+    console.log('contributors: ', contributors);
+    if (!contributors || contributors.length === 0) {
+      return 'Нет ответственных';
     }
-    if (Array.isArray(contributors)) return 'Выбранные участники';
-    return '—';
+
+    return contributors.map(id => getParticipantNameById(id)).join(', ');
   };
 
   // Выбор режима отображения в зависимости от ширины экрана (для мобильного вида)
@@ -249,7 +260,7 @@ const PurchasesTab = (props: PurchasesProps) => {
                     <div className="purchase-info">
                       <span className="info-label">Ответственный:</span>
                       <span className="info-value">
-                        {purchase.responsibleId === 'currentUser' ? 'Вы' : (purchase.responsibleId || '—')}
+                         {getParticipantNameById(purchase.responsibleId)}
                       </span>
                     </div>
                     <div className="purchase-info">
@@ -326,10 +337,18 @@ const PurchasesTab = (props: PurchasesProps) => {
                         )}
                       </td>
                       <td>
-                        {purchase.responsibleId === 'currentUser' ? 'Вы' : (purchase.responsibleId || '—')}
+                        {getParticipantNameById(purchase.responsibleId)}
                       </td>
                       <td>
-                        {getContributorsText(purchase.contributors)}
+                        {purchase.contributors && purchase.contributors.length > 0 ? (
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {purchase.contributors.map((value) => (
+                              <Chip
+                                  key={value}
+                                  label={getParticipantNameById(value)}
+                              />
+                          ))}
+                        </Box>) : 'Нет ответственных'}
                       </td>
                       <td>{getStatusText(purchase.completionStatus)}</td>
                       <td className="actions-cell">

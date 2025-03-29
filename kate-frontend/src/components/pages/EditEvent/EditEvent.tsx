@@ -80,7 +80,7 @@ const EditEvent = () => {
 
       <form className="edit-event-form" onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="name">Название мероприятия*</label>
+          <label htmlFor="name">Название мероприятия</label>
           <input
             type="text"
             id="name"
