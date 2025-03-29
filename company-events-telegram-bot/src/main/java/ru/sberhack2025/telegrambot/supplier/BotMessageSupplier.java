@@ -14,6 +14,10 @@ public class BotMessageSupplier {
 
     private final String INPUT_FIELD_PLACEHOLDER = "← Мероприятия здесь";
 
+    private final String WELCOME_MESSAGE = """
+            Привет, здесь ты можешь управлять своими мероприятиями
+            """;
+
     public SendMessage getWelcomeMessage(Long chatId) {
         List<KeyboardRow> keyboard = List.of(
                 new KeyboardRow(new KeyboardButton(Command.GET_DEBT_LIST.COMMAND_TEXT)),
@@ -28,7 +32,7 @@ public class BotMessageSupplier {
 
         return SendMessage.builder()
                 .chatId(chatId)
-                .text("HI")
+                .text(WELCOME_MESSAGE)
                 .replyMarkup(markup)
                 .build();
     }
