@@ -4,8 +4,8 @@ import Header from '../../common/Header';
 import { addPurchase, updatePurchase } from '../../../services/eventService';
 import './AddPurchase.css';
 import {UUID} from "node:crypto";
-import PurchaseFormData from "../../../model/PurchaseFormData";
-import Purchase, {CompletionStatus, FundraisingStatus} from "../../../model/Purchase";
+import ProcurementFormData from "../../../model/ProcurementFormData";
+import Procurement, {CompletionStatus, FundraisingStatus} from "../../../model/Procurement";
 import {v4} from "uuid";
 import {useTelegramAuth} from "../../../context/TelegramAuthContext";
 import {getEventById} from "../../../api/endpoints/eventEndpoints";
@@ -18,7 +18,7 @@ const AddPurchase = () => {
   const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<PurchaseFormData>();
+  const [formData, setFormData] = useState<ProcurementFormData>();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -66,7 +66,7 @@ const AddPurchase = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    const purchaseData: Purchase = {
+    const purchaseData: Procurement = {
       id: v4() as UUID, // uuid
       name: formData.name,
       price: formData.price,// int

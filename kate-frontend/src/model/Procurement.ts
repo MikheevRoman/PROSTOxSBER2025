@@ -1,6 +1,6 @@
 import {UUID} from "node:crypto";
 
-interface Purchase {
+interface Procurement {
     id: string; // uuid
     name: string;
     price: number; // int
@@ -11,7 +11,7 @@ interface Purchase {
     fundraisingStatus: FundraisingStatus;
 }
 
-export default Purchase;
+export default Procurement;
 
 export enum CompletionStatus {
     NOT_STARTED = "NOT_STARTED",
