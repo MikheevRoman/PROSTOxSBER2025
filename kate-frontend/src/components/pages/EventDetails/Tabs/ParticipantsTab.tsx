@@ -115,7 +115,7 @@ const ParticipantsTab = ({ event }: ParticipantItemProps) => {
         <h3>Пригласить участников</h3>
         <p>Поделитесь ссылкой, чтобы пригласить новых участников в мероприятие.</p>
         <div>
-          <input type="text" value={getEventInviteLink(eventId)} readOnly style={{ width: '80%', marginRight: 10 }} />
+          <input className="invite-link-input" type="text" value={getEventInviteLink(eventId)} readOnly style={{ width: '80%', marginRight: 10 }} />
           <Button variant="contained" onClick={copyInviteLink}>Копировать</Button>
         </div>
       </div>
