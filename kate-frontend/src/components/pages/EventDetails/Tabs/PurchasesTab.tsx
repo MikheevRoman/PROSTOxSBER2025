@@ -6,6 +6,7 @@ import {useTelegramAuth} from "../../../../context/TelegramAuthContext";
 import Procurement, {CompletionStatus, FundraisingStatus} from "../../../../model/Procurement";
 import EventEntity from "../../../../model/EventEntity";
 import {
+  deleteProcurement,
   getEventProcurements,
   getProcurementById,
   updateProcurement
@@ -193,6 +194,11 @@ const PurchasesTab = (props: PurchasesProps) => {
   // Выбор режима отображения в зависимости от ширины экрана (для мобильного вида)
   const [isMobileView, setIsMobileView] = useState(window.innerWidth < 768);
 
+  async function handleDeletePurchase(purchaseId: UUID) {
+    await deleteProcurement(eventId, purchaseId);
+    loadProcurements();
+  }
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobileView(window.innerWidth < 768);
@@ -247,6 +253,13 @@ const PurchasesTab = (props: PurchasesProps) => {
                           +
                         </button>
                       )}
+                      <button
+                          className="action-button"
+                          onClick={(e) => handleDeletePurchase(purchase.id)}
+                          title="Удалить"
+                      >
+                        🗑️
+                      </button>
                     </div>
                   </div>
                   <div className="purchase-details">
@@ -368,6 +381,13 @@ const PurchasesTab = (props: PurchasesProps) => {
                             +
                           </button>
                         )}
+                        <button
+                            className="action-button"
+                            onClick={(e) => handleDeletePurchase(purchase.id)}
+                            title="Удалить"
+                        >
+                          🗑️
+                        </button>
                       </td>
                     </tr>
                   ))}

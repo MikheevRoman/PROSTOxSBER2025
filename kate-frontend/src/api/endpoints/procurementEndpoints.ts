@@ -52,3 +52,7 @@ export async function getContributedProcurementsForParticipant(participantId: UU
             return [];
         });
 }
+
+export async function deleteProcurement(eventId: UUID, procurementId: UUID): Promise<void> {
+    await baseApi.delete(`company-events/events/${eventId}/procurements/${procurementId}`);
+}
