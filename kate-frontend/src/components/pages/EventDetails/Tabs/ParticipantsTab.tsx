@@ -3,14 +3,16 @@ import { useParams } from 'react-router-dom';
 import { getEventInviteLink, removeParticipant, assignNewOrganizer } from '../../../../services/eventService';
 import './TabStyles.css';
 import {UUID} from "node:crypto";
+import {useTelegramAuth} from "../../../../context/TelegramAuthContext";
 
 const ParticipantsTab = ({ event }) => {
   const eventId = useParams() as unknown as UUID;
   const [participants, setParticipants] = useState(event.participants || []);
+  const { user } = useTelegramAuth();
 
-  const handleRemoveParticipant = (participantId) => {
+  const handleRemoveParticipant = async (participantId) => {
     if (window.confirm('Вы уверены, что хотите удалить этого участника?')) {
-      const success = removeParticipant(eventId, participantId);
+      const success = await removeParticipant(user.id, eventId, participantId);
       if (success) {
         setParticipants(prevParticipants => 
           prevParticipants.filter(p => p !== participantId)
@@ -19,9 +21,9 @@ const ParticipantsTab = ({ event }) => {
     }
   };
 
-  const handleAssignOrganizer = (participantId) => {
+  const handleAssignOrganizer = async (participantId) => {
     if (window.confirm('Назначить этого участника организатором? Вы останетесь участником, но потеряете права организатора.')) {
-      const success = assignNewOrganizer(eventId, participantId);
+      const success = await assignNewOrganizer(user.id, eventId, participantId);
       if (success) {
         // Обновление состояния на клиенте
         // В реальном приложении здесь будет перезагрузка данных мероприятия

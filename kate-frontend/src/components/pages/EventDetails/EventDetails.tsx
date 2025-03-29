@@ -11,6 +11,7 @@ import SummaryTab from './Tabs/SummaryTab';
 import './EventDetails.css';
 import {UUID} from "node:crypto";
 import EventEntity from "../../../model/EventEntity";
+import {useTelegramAuth} from "../../../context/TelegramAuthContext";
 
 const EventDetails = () => {
   const eventId = useParams() as unknown as UUID;
@@ -18,10 +19,11 @@ const EventDetails = () => {
   const [event, setEvent] = useState<EventEntity | null>(null);
   const [activeTab, setActiveTab] = useState('purchases');
   const [loading, setLoading] = useState<boolean>(true);
+  const { user } = useTelegramAuth();
 
   useEffect(() => {
     const loadEvent = async () => {
-      const eventData = await getEventById(eventId);
+      const eventData = await getEventById(user.id, eventId);
       if (eventData) {
         setEvent(eventData);
       } else {

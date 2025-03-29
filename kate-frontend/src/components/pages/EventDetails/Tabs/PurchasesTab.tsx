@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { updatePurchase } from '../../../../services/eventService';
 import './TabStyles.css';
 import {UUID} from "node:crypto";
+import {useTelegramAuth} from "../../../../context/TelegramAuthContext";
 
 const PurchasesTab = ({ event, onAddPurchase }) => {
   const eventId = useParams() as unknown as UUID;
@@ -11,6 +12,7 @@ const PurchasesTab = ({ event, onAddPurchase }) => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [budgetDifference, setBudgetDifference] = useState(0);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
+  const { user } = useTelegramAuth();
 
   useEffect(() => {
     if (event && event.purchases) {
@@ -53,7 +55,7 @@ const PurchasesTab = ({ event, onAddPurchase }) => {
       newContributors = ['currentUser'];
     }
 
-    await updatePurchase(eventId, purchaseId, { contributors: newContributors });
+    await updatePurchase(user.id, eventId, purchaseId, { contributors: newContributors });
     
     // Обновление состояния в UI
     setPurchases(prevPurchases => 

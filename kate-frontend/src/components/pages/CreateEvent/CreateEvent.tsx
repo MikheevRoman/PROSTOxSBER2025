@@ -8,12 +8,14 @@ import EventEntity from "../../../model/EventEntity";
 import ApiErrorResponse from '../../../model/ApiErrorResponse';
 import {v4} from "uuid";
 import {UUID} from "node:crypto";
+import {useTelegramAuth} from "../../../context/TelegramAuthContext";
 
 const CreateEvent = () => {
   const [formData, setFormData] = useState<EventFormData>();
   const [eventCreated, setEventCreated] = useState(false);
   const [createdEvent, setCreatedEvent] = useState<EventEntity | null>(null);
   const navigate = useNavigate();
+  const { user } = useTelegramAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -51,7 +53,7 @@ const CreateEvent = () => {
     //   note: formData.note || null,
     // };
     //
-    const newEvent: EventEntity | ApiErrorResponse = await createEvent(eventFromForm);
+    const newEvent: EventEntity | ApiErrorResponse = await createEvent(user.id, eventFromForm);
 
     if (!newEvent || newEvent instanceof ApiErrorResponse) {
       return;

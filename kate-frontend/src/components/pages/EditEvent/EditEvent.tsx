@@ -7,16 +7,18 @@ import EventFormData from "../../../model/EventFormData";
 import {UUID} from "node:crypto";
 import EventEntity from "../../../model/EventEntity";
 import {v4} from "uuid";
+import {useTelegramAuth} from "../../../context/TelegramAuthContext";
 
 const EditEvent = () => {
   const eventId = useParams() as unknown as UUID;
   const navigate = useNavigate();
   const [formData, setFormData] = useState<EventFormData>();
   const [loading, setLoading] = useState(true);
+  const { user } = useTelegramAuth();
 
   useEffect(() => {
     const loadEvent = async () => {
-      const eventData = await getEventById(eventId);
+      const eventData = await getEventById(user.id, eventId);
       if (eventData) {
         // Разделение даты и времени
         let dateValue = '';
@@ -88,7 +90,7 @@ const EditEvent = () => {
       comment: formData?.comment
     }
     
-    await updateEvent(eventId, eventFromForm);
+    await updateEvent(user.id, eventId, eventFromForm);
     navigate(`/event/${eventId}`);
   };
 

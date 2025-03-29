@@ -3,10 +3,12 @@ import { useParams } from 'react-router-dom';
 import { updatePurchase } from '../../../../services/eventService';
 import './TabStyles.css';
 import {UUID} from "node:crypto";
+import {useTelegramAuth} from "../../../../context/TelegramAuthContext";
 
 const MyTasksTab = ({ event }) => {
   const eventId = useParams() as unknown as UUID;
   const [tasks, setTasks] = useState([]);
+  const { user } = useTelegramAuth();
 
   useEffect(() => {
     if (event && event.purchases) {
@@ -19,9 +21,9 @@ const MyTasksTab = ({ event }) => {
     }
   }, [event]);
 
-  const handleTaskStatusChange = (taskId, isCompleted) => {
+  const handleTaskStatusChange = async (taskId, isCompleted) => {
     const status = isCompleted ? 'completed' : 'in_progress';
-    updatePurchase(eventId, taskId, { status });
+    await updatePurchase(user.id, eventId, taskId, { status });
     
     // Обновление состояния в UI
     setTasks(prevTasks => 
@@ -31,10 +33,10 @@ const MyTasksTab = ({ event }) => {
     );
   };
 
-  const handleCostChange = (taskId, newCost) => {
+  const handleCostChange = async(taskId, newCost) => {
     if (newCost === '' || !isNaN(newCost)) {
       const costValue = newCost === '' ? null : parseFloat(newCost);
-      updatePurchase(eventId, taskId, { cost: costValue });
+      await updatePurchase(user.id, eventId, taskId, { cost: costValue });
       
       // Обновление состояния в UI
       setTasks(prevTasks => 

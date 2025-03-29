@@ -7,12 +7,13 @@ import {UUID} from "node:crypto";
 import PurchaseFormData from "../../../model/PurchaseFormData";
 import Purchase, {CompletionStatus, FundraisingStatus} from "../../../model/Purchase";
 import {v4} from "uuid";
+import {useTelegramAuth} from "../../../context/TelegramAuthContext";
 
 const AddPurchase = () => {
   const { eventIdString, purchaseIdString } = useParams();
   const eventId = eventIdString as UUID;
   const purchaseId = purchaseIdString as UUID;
-
+  const { user } = useTelegramAuth();
   const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -21,7 +22,7 @@ const AddPurchase = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      const eventData = await getEventById(eventId);
+      const eventData = await getEventById(user.id, eventId);
       if (eventData) {
         setEvent(eventData);
 
@@ -76,9 +77,9 @@ const AddPurchase = () => {
     };
     
     if (isEditing) {
-      await updatePurchase(eventId, purchaseId, purchaseData);
+      await updatePurchase(user.id, eventId, purchaseId, purchaseData);
     } else {
-      await addPurchase(eventId, purchaseData);
+      await addPurchase(user.id, eventId, purchaseData);
     }
     
     navigate(`/event/${eventId}`);
