@@ -15,6 +15,8 @@ spring:
     open-in-view: true
   liquibase:
     change-log: classpath:db/company-events-changelog.xml
+  config:
+    import: "classpath:messages/messages.yml"
 
 
 server:

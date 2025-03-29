@@ -46,10 +46,11 @@ public interface ProcurementMapper extends DefaultMapper<Procurement, Procuremen
     }
 
     private BigDecimal getPrice(Procurement procurement, BigDecimal contributors, BigDecimal participations) {
+        BigDecimal price = Optional.ofNullable(procurement.getPrice()).orElse(BigDecimal.ZERO);
         if (procurement.getContributors().isEmpty()) {
-            return procurement.getPrice().divide(participations, RoundingMode.UP);
+            return price.divide(participations, RoundingMode.UP);
         } else {
-            return procurement.getPrice().divide(contributors, RoundingMode.UP);
+            return price.divide(contributors, RoundingMode.UP);
         }
     }
 
