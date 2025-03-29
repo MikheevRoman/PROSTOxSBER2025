@@ -9,14 +9,20 @@ import { useTelegramAuth } from '../../../context/TelegramAuthContext';
 
 const EventList = () => {
   const [events, setEvents] = useState<EventEntity[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user } = useTelegramAuth();
 
   const loadEvents = async () => {
     if (!user) {
-      console.error('User data not available');
+      setError('User data not available');
+      setLoading(false);
       return;
     }
+
+    setLoading(true);
+    setError(null);
 
     let eventsList: EventEntity[] = [];
     try {
@@ -25,7 +31,10 @@ const EventList = () => {
     }
     catch (error) {
       console.log(error);
+      setError('Failed to load events');
       return;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -48,8 +57,12 @@ const EventList = () => {
     clickEvent.stopPropagation();
     if (!user) return;
 
-    await deleteEvent(eventId); // Добавляем userId для удаления
-    await loadEvents();
+    try {
+      await deleteEvent(eventId);
+      await loadEvents();
+    } catch (error) {
+      console.error('Error deleting event:', error);
+    }
   }
 
   const renderEventStatus = (event: EventEntity) => {
@@ -68,6 +81,24 @@ const EventList = () => {
       minute: '2-digit'
     });
   };
+
+  if (loading) {
+    return (
+        <div className="event-list-container">
+          <Header title="Мероприятия" />
+          <div className="loading">Загрузка мероприятий...</div>
+        </div>
+    );
+  }
+
+  if (error) {
+    return (
+        <div className="event-list-container">
+          <Header title="Мероприятия" />
+          <div className="error">{error}</div>
+        </div>
+    );
+  }
 
   return (
     <div className="event-list-container">
