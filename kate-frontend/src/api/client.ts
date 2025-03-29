@@ -1,70 +1,104 @@
-import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
-import { useTelegramAuth } from '../context/TelegramAuthContext';
+import axios, {
+    AxiosHeaders,
+    AxiosInstance,
+    AxiosRequestHeaders,
+    InternalAxiosRequestConfig, RawAxiosRequestHeaders
+} from 'axios';
+import {useTelegramAuth} from "../context/TelegramAuthContext";
 
-/**
- * Расширенный интерфейс AxiosInstance с уточнённой сигнатурой вызова
- * @interface ApiClient
- * @extends {AxiosInstance}
- */
-interface ApiClient extends AxiosInstance {
-    (config: InternalAxiosRequestConfig): Promise<any>;
+interface TelegramUser {
+    id: number;
+    first_name?: string;
+    last_name?: string;
+    username?: string;
+    photo_url?: string;
+    auth_date?: number;
+    hash?: string;
 }
 
 /**
- * Фабрика для создания настроенного экземпляра axios-клиента
- * @function createApiClient
- * @returns {ApiClient} Настроенный экземпляр axios-клиента
- *
- * @description
- * Этот модуль создаёт предварительно настроенный HTTP-клиент для работы с API:
- * 1. Устанавливает базовый URL из переменных окружения
- * 2. Добавляет интерцептор для автоматической подстановки Telegram-аутентификации
- * 3. Предоставляет единую точку конфигурации для всех API-запросов
- *
- * @example
- * // Использование в компоненте или сервисе:
- * import api from './api/client';
- *
- * const fetchData = async () => {
- *   try {
- *     const response = await api.get('/endpoint');
- *     console.log(response.data);
- *   } catch (error) {
- *     console.error('API error:', error);
- *   }
- * };
+ * Интерфейс расширенного Axios клиента
  */
-const createApiClient = (): ApiClient => {
-    // Создаём базовый экземпляр axios с настройками
+interface ApiClient extends AxiosInstance {
+    <T = any>(config: InternalAxiosRequestConfig): Promise<T>;
+}
+
+/**
+ * Создаёт экземпляр axios с автоматической подстановкой Telegram-заголовков
+ * @param {Function} [getUser] - Функция для получения пользователя (для использования в компонентах)
+ */
+const createApiClient = (getUser?: () => { user: TelegramUser | null }): ApiClient => {
     const instance = axios.create({
-        baseURL: process.env.REACT_APP_API_URL, // Базовый URL берётся из переменных окружения
+        baseURL: process.env.REACT_APP_API_URL,
     });
 
-    // Добавляем интерцептор для модификации запросов
     instance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-        // Получаем данные пользователя из контекста Telegram
-        const { user } = useTelegramAuth();
+        // Получаем пользователя разными способами в зависимости от контекста
+        let user: TelegramUser | null = null;
+
+        // Способ 1: Из переданной функции (используется в компонентах)
+        if (getUser) {
+            user = getUser().user;
+        }
+        // 1. Пытаемся получить из Telegram WebApp
+        if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+            const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+            user = {
+                id: tgUser.id,
+                first_name: tgUser.first_name,
+                last_name: tgUser.last_name,
+                username: tgUser.username,
+                photo_url: tgUser.photo_url,
+                auth_date: window.Telegram.WebApp.initDataUnsafe.auth_date,
+                hash: window.Telegram.WebApp.initDataUnsafe.hash
+            };
+        }
+        // 2. Для разработки - моковые данные
+        else if (process.env.NODE_ENV === 'development') {
+            user = {
+                id: 123456789,
+                first_name: 'Dev',
+                last_name: 'User',
+                auth_date: Math.floor(Date.now() / 1000),
+                hash: 'dev-mock-hash'
+            };
+        }
 
         if (user) {
-            // Инициализируем headers если они не существуют
-            config.headers = config.headers || {};
+            // Создаём новый объект заголовков с правильным типом
+            const headers = new AxiosHeaders({
+                ...config.headers as RawAxiosRequestHeaders,
+                'X-Telegram-User-ID': user.id.toString()
+            });
 
-            // Добавляем Telegram-аутентификацию в заголовки
-            config.headers['X-Telegram-User-ID'] = user.id.toString();
-
-            // Опциональные заголовки
             if (user.auth_date) {
-                config.headers['X-Telegram-Auth-Date'] = user.auth_date.toString();
+                headers['X-Telegram-Auth-Date'] = user.auth_date.toString();
             }
             if (user.hash) {
-                config.headers['X-Telegram-Hash'] = user.hash;
+                headers['X-Telegram-Hash'] = user.hash;
             }
+
+            return {
+                ...config,
+                headers
+            };
         }
+
         return config;
     });
 
     return instance;
 };
 
-// Экспортируем функцию создания клиента (синглтон-паттерн)
-export default createApiClient();
+// Базовый экземпляр для использования вне компонентов
+const baseApi = createApiClient();
+
+// Фабрика для создания экземпляра с доступом к контексту
+export const createApiClientWithContext = () => {
+    // Используем замыкание для доступа к контексту
+    const { user } = useTelegramAuth();
+    return createApiClient(() => ({ user }));
+};
+
+// Экспортируем базовый клиент
+export default baseApi;

@@ -73,15 +73,39 @@ export const useTelegram = () => {
          */
         const initTelegram = () => {
             try {
-                // Проверяем наличие Telegram WebApp API в глобальном объекте window
+                // Режим разработки с моком (если включен в .env)
+                if (
+                    process.env.REACT_APP_ENV === 'development' &&
+                    process.env.REACT_APP_ENABLE_TELEGRAM_MOCK === 'true'
+                ) {
+                    const mockUser = {
+                        id: 123456789,
+                        first_name: 'Dev',
+                        last_name: 'User',
+                        username: 'dev_user',
+                        photo_url: 'https://example.com/avatar.jpg'
+                    };
+
+                    setTg({
+                        ready: () => console.log('[MOCK] Telegram ready()'),
+                        expand: () => console.log('[MOCK] Telegram expand()'),
+                        initDataUnsafe: {
+                            user: mockUser,
+                            auth_date: Math.floor(Date.now() / 1000),
+                            hash: 'mock-hash'
+                        }
+                    });
+                    return;
+                }
+
+                // Реальный режим (prod или dev без мока)
                 if (window.Telegram?.WebApp) {
                     setTg(window.Telegram.WebApp);
                 } else {
                     console.warn('Telegram WebApp not available');
-                    // Мок реализации для разработки вне Telegram
                     setTg({
-                        ready: () => console.log('Telegram ready() mocked'),
-                        expand: () => console.log('Telegram expand() mocked'),
+                        ready: () => {},
+                        expand: () => {}
                     });
                 }
             } catch (e) {
