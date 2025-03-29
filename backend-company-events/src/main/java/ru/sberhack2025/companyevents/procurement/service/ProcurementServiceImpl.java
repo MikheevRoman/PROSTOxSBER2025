@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.sberhack2025.companyevents.core.service.DefaultServiceImpl;
 import ru.sberhack2025.companyevents.event.model.Event;
 import ru.sberhack2025.companyevents.event.repository.EventRepository;
-import ru.sberhack2025.companyevents.participant.dto.ParticipantView;
 import ru.sberhack2025.companyevents.participant.model.Participant;
 import ru.sberhack2025.companyevents.participant.repository.ParticipantRepository;
 import ru.sberhack2025.companyevents.participant.service.ParticipantService;
@@ -117,10 +116,10 @@ public class ProcurementServiceImpl extends DefaultServiceImpl<
 
     @Override
     protected ProcurementView enrichView(Procurement entity, ProcurementView dto) {
-        List<ParticipantView> contributors = participantService.toView(entity.getContributors());
-        ParticipantView responsible = participantService.toView(entity.getResponsible());
+        List<UUID> contributors = entity.getContributors().stream().map(Participant::getId).toList();
+        UUID responsibleId = entity.getResponsible().getId();
         dto.setContributors(contributors);
-        dto.setResponsible(responsible);
+        dto.setResponsibleId(responsibleId);
         return dto;
     }
 
