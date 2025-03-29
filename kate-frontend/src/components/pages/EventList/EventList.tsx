@@ -57,6 +57,9 @@ const EventList = () => {
     clickEvent.stopPropagation();
     if (!user) return;
 
+    const confirmDelete = window.confirm("Вы уверены, что хотите удалить это мероприятие? Отменить действие будет невозможно.");
+    if (!confirmDelete) return;
+
     try {
       await deleteEvent(eventId);
       await loadEvents();
