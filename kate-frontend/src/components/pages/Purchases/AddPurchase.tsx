@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../../common/Header';
-import { getEventById, addPurchase, updatePurchase } from '../../../services/eventService';
+import { addPurchase, updatePurchase } from '../../../services/eventService';
 import './AddPurchase.css';
 import {UUID} from "node:crypto";
 import PurchaseFormData from "../../../model/PurchaseFormData";
 import Purchase, {CompletionStatus, FundraisingStatus} from "../../../model/Purchase";
 import {v4} from "uuid";
 import {useTelegramAuth} from "../../../context/TelegramAuthContext";
+import {getEventById} from "../../../api/endpoints/eventEndpoints";
 
 const AddPurchase = () => {
   const { eventIdString, purchaseIdString } = useParams();

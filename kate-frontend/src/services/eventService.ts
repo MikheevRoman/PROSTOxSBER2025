@@ -3,6 +3,7 @@ import axios from "axios";
 import {UUID} from "node:crypto";
 import EventEntity from "../model/EventEntity";
 import ApiErrorResponse from "../model/ApiErrorResponse";
+import {getEvents} from "../api/endpoints/eventEndpoints";
 
 // Сервис для работы с данными о мероприятиях
 const EVENTS_KEY = 'kate_events';
@@ -13,34 +14,34 @@ const API_BASE_URL = "https://prosto-sber-2025.gros.pro/api/company-events";
 // Генерация уникального UUID
 const generateId = () => v4();
 
-/**
- * Получение мероприятий пользователя
- * @param userId ID пользователя Telegram
- * @returns {Promise<EventEntity[]>} Массив мероприятий
- */
-export async function getEvents(userId: number): Promise<EventEntity[]> {
-  return axios.get(`${API_BASE_URL}/users/${userId}/events`)
-      .then(response => response.data)
-      .catch(error => {
-        console.error('Error fetching events:', error);
-        throw error;
-      });
-}
+// /**
+//  * Получение мероприятий пользователя
+//  * @param userId ID пользователя Telegram
+//  * @returns {Promise<EventEntity[]>} Массив мероприятий
+//  */
+// export async function getEvents(userId: number): Promise<EventEntity[]> {
+//   return axios.get(`${API_BASE_URL}/users/${userId}/events`)
+//       .then(response => response.data)
+//       .catch(error => {
+//         console.error('Error fetching events:', error);
+//         throw error;
+//       });
+// }
 
-/**
- * Получение конкретного мероприятия
- * @param userId ID пользователя Telegram
- * @param eventId UUID мероприятия
- * @returns {Promise<EventEntity | null>} Объект мероприятия или null
- */
-export async function getEventById(userId: number, eventId: UUID): Promise<EventEntity | null> {
-  return axios.get(`${API_BASE_URL}/events/${eventId}`)
-      .then(response => response.data)
-      .catch(error => {
-        console.error('Error fetching event:', error);
-        return null;
-      });
-}
+// /**
+//  * Получение конкретного мероприятия
+//  * @param userId ID пользователя Telegram
+//  * @param eventId UUID мероприятия
+//  * @returns {Promise<EventEntity | null>} Объект мероприятия или null
+//  */
+// export async function getEventById(userId: number, eventId: UUID): Promise<EventEntity | null> {
+//   return axios.get(`${API_BASE_URL}/events/${eventId}`)
+//       .then(response => response.data)
+//       .catch(error => {
+//         console.error('Error fetching event:', error);
+//         return null;
+//       });
+// }
 
 
 /**

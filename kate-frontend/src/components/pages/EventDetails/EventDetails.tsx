@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../common/Header';
 import Tabs from '../../common/Tabs';
-import { getEventById, getEventInviteLink } from '../../../services/eventService';
 import PurchasesTab from './Tabs/PurchasesTab';
 import MyContributionsTab from './Tabs/MyContributionsTab';
 import MyTasksTab from './Tabs/MyTasksTab';
@@ -12,6 +11,7 @@ import './EventDetails.css';
 import {UUID} from "node:crypto";
 import EventEntity from "../../../model/EventEntity";
 import {useTelegramAuth} from "../../../context/TelegramAuthContext";
+import {getEventById} from "../../../api/endpoints/eventEndpoints";
 
 const EventDetails = () => {
   const eventId: UUID = (useParams()).eventId as UUID;

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../common/Header';
-import {deleteEvent, getEvents} from '../../../services/eventService';
+import {deleteEvent} from '../../../services/eventService';
 import './EventList.css';
 import {UUID} from "node:crypto";
 import EventEntity from "../../../model/EventEntity";
 import { useTelegramAuth } from '../../../context/TelegramAuthContext';
+import {getEvents} from "../../../api/endpoints/eventEndpoints";
 
 const EventList = () => {
   const [events, setEvents] = useState<EventEntity[]>([]);
@@ -16,7 +17,7 @@ const EventList = () => {
 
   const loadEvents = async () => {
     if (!user) {
-      setError('User data not available');
+      setError('Данные пользователя отсутствуют');
       setLoading(false);
       return;
     }
@@ -31,7 +32,7 @@ const EventList = () => {
     }
     catch (error) {
       console.log(error);
-      setError('Failed to load events');
+      setError('Ошибка при загрузке мероприятий');
       return;
     } finally {
       setLoading(false);
@@ -61,7 +62,7 @@ const EventList = () => {
       await deleteEvent(eventId);
       await loadEvents();
     } catch (error) {
-      console.error('Error deleting event:', error);
+      console.error('Ошибка при удалении мероприятия', error);
     }
   }
 
