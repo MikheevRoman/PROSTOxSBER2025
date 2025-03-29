@@ -1,6 +1,6 @@
 import baseApi from "../../api/client";
 import ApiErrorResponse from "../../model/ApiErrorResponse";
-import Participant from "../../model/User";
+import Participant from "../../model/Participant";
 
 /**
  * Добавление участника мероприятия

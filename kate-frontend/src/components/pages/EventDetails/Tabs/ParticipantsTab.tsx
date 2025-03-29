@@ -1,14 +1,37 @@
-import React, { useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import { useParams } from 'react-router-dom';
 import { getEventInviteLink, removeParticipant, assignNewOrganizer } from '../../../../services/eventService';
 import './TabStyles.css';
 import {UUID} from "node:crypto";
 import {useTelegramAuth} from "../../../../context/TelegramAuthContext";
+import Participant from "../../../../model/Participant";
+import {getEventParticipants} from "../../../../api/endpoints/participantsEndpoints";
+import ApiErrorResponse from "../../../../model/ApiErrorResponse";
+import EventEntity from "../../../../model/EventEntity";
 
-const ParticipantsTab = ({ event }) => {
+interface ParticipantItemProps {
+  event: EventEntity;
+}
+
+const ParticipantsTab = (props: ParticipantItemProps) => {
   const eventId = (useParams()).eventId as UUID;
-  const [participants, setParticipants] = useState(event.participants || []);
+  const event = props.event;
+  const [participants, setParticipants] = useState<Participant[]>([]);
   const { user } = useTelegramAuth();
+
+  const loadParticipants = useCallback(async () => {
+    const participants = await getEventParticipants(eventId);
+    if (!participants || participants instanceof ApiErrorResponse) {
+      console.error('Ошибка при получении участников мероприятия');
+      return;
+    }
+
+    setParticipants(participants);
+  }, [eventId]);
+
+  useEffect(() => {
+    loadParticipants();
+  }, [loadParticipants]);
 
   const handleRemoveParticipant = async (participantId) => {
     if (window.confirm('Вы уверены, что хотите удалить этого участника?')) {
@@ -52,7 +75,7 @@ const ParticipantsTab = ({ event }) => {
     return `Участник ${participantId.substring(0, 5)}`;
   };
 
-  const isOrganizer = event.organizer === 'currentUser';
+  const isOrganizer = event.organizerTgUserId === user.id;
 
   return (
     <div className="tab-container">
@@ -70,22 +93,22 @@ const ParticipantsTab = ({ event }) => {
             </tr>
           </thead>
           <tbody>
-            {participants.map((participantId, index) => {
-              const isCurrentOrganizer = participantId === event.organizer;
+            {participants.map((participant, index) => {
+              const isCurrentOrganizer = (participant.id === event.organizerTgUserId);
               return (
-                <tr key={participantId}>
+                <tr key={participant.id}>
                   <td className="participant-name">
-                    <div>{index + 1}. {getParticipantName(participantId)}</div>
+                    <div>{index + 1}. {participant.name}</div>
                   </td>
                   <td>{isCurrentOrganizer ? 'Организатор' : 'Участник'}</td>
                   {isOrganizer && (
                     <td className="actions-cell">
-                      {participantId !== 'currentUser' && (
+                      {participant.id !== user.id && (
                         <>
                           {!isCurrentOrganizer && (
                             <button 
                               className="action-button"
-                              onClick={() => handleAssignOrganizer(participantId)}
+                              onClick={() => handleAssignOrganizer(participant.id)}
                               title="Назначить организатором"
                             >
                               👑
@@ -93,7 +116,7 @@ const ParticipantsTab = ({ event }) => {
                           )}
                           <button 
                             className="action-button delete"
-                            onClick={() => handleRemoveParticipant(participantId)}
+                            onClick={() => handleRemoveParticipant(participant.id)}
                             title="Удалить участника"
                           >
                             ✕

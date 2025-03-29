@@ -39,7 +39,7 @@ const EventDetails = () => {
     };
 
     loadEvent();
-  }, [eventId, navigate]);
+  }, [eventId]);
 
   const handleEditEvent = () => {
     navigate(`/event/${eventId}/edit`);
@@ -91,7 +91,7 @@ const EventDetails = () => {
       case 'participants':
         return <ParticipantsTab event={event} />;
       case 'summary':
-        return event.isOrganizer ? <SummaryTab event={event} /> : null;
+        return (event.organizerTgUserId === user?.id) ? <SummaryTab event={event} /> : null;
       default:
         return <PurchasesTab event={event} onAddPurchase={handleAddPurchase} />;
     }

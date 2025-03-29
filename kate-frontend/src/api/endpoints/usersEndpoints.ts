@@ -1,6 +1,6 @@
 import baseApi from "../../api/client";
 import ApiErrorResponse from "../../model/ApiErrorResponse";
-import User from "../../model/User";
+import User from "../../model/Participant";
 
 /**
  * Получение всех пользователей
