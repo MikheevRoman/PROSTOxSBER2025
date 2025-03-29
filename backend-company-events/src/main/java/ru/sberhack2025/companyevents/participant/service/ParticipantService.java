@@ -16,4 +16,5 @@ public interface ParticipantService {
     List<ParticipantView> getAllByEvent(UUID eventId);
     ParticipantView toView(Participant participant);
     List<ParticipantView> toView(List<Participant> participants);
+    ParticipantView findByUserAndEvent(Long tgUserId, UUID eventId);
 }

@@ -44,4 +44,13 @@ public class ParticipantController {
     public List<ParticipantView> getAllByUser(@PathVariable UUID eventId) {
         return participantService.getAllByEvent(eventId);
     }
+
+    @Operation(
+            summary = "Получить всех участника по id мероприятия и tg userId"
+    )
+    @GetMapping("participants/search")
+    public ParticipantView getAllByUser(@RequestParam("eventId") UUID eventId,
+                                        @RequestParam("tgUserId") Long tgUserId) {
+        return participantService.findByUserAndEvent(tgUserId, eventId);
+    }
 }
