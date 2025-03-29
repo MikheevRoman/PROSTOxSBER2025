@@ -48,7 +48,7 @@ const MyTasksTab = ({ event }) => {
   return (
     <div className="tab-container">
       <div className="tab-header">
-        <h2>Мои задачи</h2>
+        <h2>Задачи</h2>
       </div>
 
       {tasks.length === 0 ? (
