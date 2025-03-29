@@ -1,0 +1,83 @@
+.event-list-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.event-list {
+  padding: 1rem 0;
+}
+
+.event-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.event-title {
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+  color: #1a73e8;
+}
+
+.event-details {
+  font-size: 0.9rem;
+  color: #5f6368;
+}
+
+.event-date,
+.event-location {
+  margin-bottom: 0.25rem;
+}
+
+.event-label {
+  font-weight: 500;
+  color: #3c4043;
+}
+
+.event-status {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.status-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  background-color: #f1f3f4;
+  color: #5f6368;
+}
+
+.status-badge.organizer {
+  background-color: #e8f0fe;
+  color: #1a73e8;
+}
+
+.status-badge.participant {
+  background-color: #e6f4ea;
+  color: #137333;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.empty-state p {
+  margin-bottom: 1rem;
+  color: #5f6368;
+}
+
+@media (min-width: 768px) {
+  .event-title {
+    font-size: 1.3rem;
+  }
+  
+  .event-details {
+    font-size: 1rem;
+  }
+} 

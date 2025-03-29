@@ -1,0 +1,63 @@
+.event-details-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.event-summary {
+  background-color: white;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e8eaed;
+}
+
+.event-info {
+  font-size: 0.9rem;
+}
+
+.event-date,
+.event-location,
+.event-budget,
+.event-note {
+  margin-bottom: 0.5rem;
+}
+
+.event-label {
+  font-weight: 500;
+  color: #3c4043;
+}
+
+.event-status {
+  margin-top: 0.75rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tab-content {
+  flex: 1;
+  padding: 1rem 0;
+}
+
+.loading,
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1rem;
+  color: #5f6368;
+}
+
+.error {
+  color: #d93025;
+}
+
+@media (min-width: 768px) {
+  .event-info {
+    font-size: 1rem;
+  }
+  
+  .event-summary {
+    padding: 1.25rem;
+  }
+} 
