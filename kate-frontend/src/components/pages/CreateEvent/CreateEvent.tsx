@@ -32,11 +32,8 @@ const CreateEvent = () => {
     const eventFromForm: EventEntity = {
       createdAt: Date.prototype,
       eventRefCode: "",
-      isOrganizer: false,
-      organizer: v4() as UUID, // TODO: REPLACE WITH TG ID
       organizerCardInfo: "",
-      organizerTgUserId: 0,
-      participants: [],
+      organizerTgUserId: user.id,
       purchases: [],
       id: v4() as UUID,
       name: formData?.name,
@@ -80,39 +77,6 @@ const CreateEvent = () => {
         title="Создание мероприятия" 
         showBackButton={true} 
       />
-      <div className="form-data-visualizer">
-        <h2>Form Data Preview</h2>
-        <div className="data-grid">
-          <div className="data-row">
-            <span className="data-label">Name:</span>
-            <span className="data-value">{formData?.name || 'Not provided'}</span>
-          </div>
-
-          <div className="data-row">
-            <span className="data-label">Date:</span>
-            <span className="data-value">
-            {formData?.date ? (formData.date) : 'Not set'}
-          </span>
-          </div>
-
-          <div className="data-row">
-            <span className="data-label">Place:</span>
-            <span className="data-value">{formData?.place || 'Not provided'}</span>
-          </div>
-
-          <div className="data-row">
-            <span className="data-label">Budget:</span>
-            <span className="data-value">
-            {formData?.budget !== undefined ? formData.budget : 'Not set'}
-          </span>
-          </div>
-
-          <div className="data-row">
-            <span className="data-label">Comment:</span>
-            <span className="data-value">{formData?.comment || 'No comments'}</span>
-          </div>
-        </div>
-      </div>
       {eventCreated ? (
         <div className="notification">
           <div className="notification-content">

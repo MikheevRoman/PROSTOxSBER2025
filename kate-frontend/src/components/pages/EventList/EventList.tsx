@@ -65,8 +65,12 @@ const EventList = () => {
     }
   }
 
+  function isCurrentUserOrganizerOf(event: EventEntity): boolean {
+    return event.organizerTgUserId === user.id;
+  }
+
   const renderEventStatus = (event: EventEntity) => {
-    return event.isOrganizer ? 'Организатор' : 'Участник';
+    return isCurrentUserOrganizerOf(event) ? 'Организатор' : 'Участник';
   };
 
   const formatDate = (dateString: string) => {
@@ -137,12 +141,12 @@ const EventList = () => {
                   </p>
                 )}
                 <div className="event-status">
-                  <span className={`status-badge ${event.isOrganizer ? 'organizer' : 'participant'}`}>
+                  <span className={`status-badge ${isCurrentUserOrganizerOf(event) ? 'organizer' : 'participant'}`}>
                     {renderEventStatus(event)}
                   </span>
                 </div>
                 {
-                  event.isOrganizer && (
+                  isCurrentUserOrganizerOf(event) && (
                     <button className="button" onClick={(e) => handleDeleteEvent(e, event.id)}>
                       Удалить
                     </button>

@@ -41,6 +41,10 @@ const EventDetails = () => {
     loadEvent();
   }, [eventId]);
 
+  function isCurrentUserOrganizer(): boolean {
+    return event?.organizerTgUserId === user?.id;
+  }
+
   const handleEditEvent = () => {
     navigate(`/event/${eventId}/edit`);
   };
@@ -71,7 +75,7 @@ const EventDetails = () => {
     ];
 
     // Вкладка "Итоги" доступна только организатору
-    if (event && event.isOrganizer) {
+    if (isCurrentUserOrganizer()) {
       tabs.push({ id: 'summary', label: 'Итоги' });
     }
 
@@ -91,7 +95,7 @@ const EventDetails = () => {
       case 'participants':
         return <ParticipantsTab event={event} />;
       case 'summary':
-        return (event.organizerTgUserId === user?.id) ? <SummaryTab event={event} /> : null;
+        return isCurrentUserOrganizer() ? <SummaryTab event={event} /> : null;
       default:
         return <PurchasesTab event={event} onAddPurchase={handleAddPurchase} />;
     }
@@ -111,7 +115,7 @@ const EventDetails = () => {
         title={event.name}
         showBackButton={true}
         actionButton={
-          event.isOrganizer && (
+          isCurrentUserOrganizer() && (
             <button className="button secondary" onClick={handleEditEvent}>
               Редактировать
             </button>
@@ -140,8 +144,8 @@ const EventDetails = () => {
             </p>
           )}
           <p className="event-status">
-            <span className={`status-badge ${event.isOrganizer ? 'organizer' : 'participant'}`}>
-              {event.isOrganizer ? 'Организатор' : 'Участник'}
+            <span className={`status-badge ${isCurrentUserOrganizer() ? 'organizer' : 'participant'}`}>
+              {isCurrentUserOrganizer() ? 'Организатор' : 'Участник'}
             </span>
           </p>
         </div>

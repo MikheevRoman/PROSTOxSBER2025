@@ -63,25 +63,12 @@ const EditEvent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Объединение даты и времени, если они указаны
-    // let eventDate = null;
-    // if (formData.date) {
-    //   if (formData.time) {
-    //     eventDate = `${formData.date}T${formData.time}`;
-    //   } else {
-    //     eventDate = formData.date;
-    //   }
-    // }
 
     const eventFromForm: EventEntity = {
       createdAt: Date.prototype,
       eventRefCode: "",
-      isOrganizer: false,
-      organizer: v4() as UUID, // TODO: REPLACE WITH TG ID
       organizerCardInfo: "",
-      organizerTgUserId: 0,
-      participants: [],
+      organizerTgUserId: user.id,
       purchases: [],
       id: v4() as UUID,
       name: formData?.name || "",
