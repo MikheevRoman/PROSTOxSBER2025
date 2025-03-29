@@ -2,6 +2,7 @@ import baseApi from "../../api/client";
 import {UUID} from "node:crypto";
 import ApiErrorResponse from "../../model/ApiErrorResponse";
 import Procurement from "../../model/Procurement";
+import ShortProcurement from "../../model/Procurement";
 
 export async function getEventProcurements(eventId: UUID): Promise<Procurement[]> {
     return await baseApi.get(`company-events/events/${eventId}/procurements`)
@@ -40,5 +41,14 @@ export async function updateProcurement(eventId: UUID, procurementId: UUID, proc
         .then(response => response.data)
         .catch(error => {
             console.error("Error updating procurement:", error);
+        });
+}
+
+export async function getContributedProcurementsForParticipant(participantId: UUID): Promise<ShortProcurement[]> {
+    return await baseApi.get(`company-events/participants/${participantId}/procurements/contributed`)
+        .then(response => response.data)
+        .catch(error => {
+            console.error("Error fetching contributed procurements:", error);
+            return [];
         });
 }

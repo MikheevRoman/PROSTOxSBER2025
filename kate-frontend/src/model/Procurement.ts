@@ -11,6 +11,13 @@ interface Procurement {
     fundraisingStatus: FundraisingStatus;
 }
 
+interface ShortProcurement {
+    id: UUID;
+    name: string;
+    price: number;
+    comment: string;
+}
+
 export default Procurement;
 
 export enum CompletionStatus {
