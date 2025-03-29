@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Service
 @Slf4j
@@ -22,18 +23,26 @@ public class ParticipantServiceImpl implements ParticipantService {
     public ParticipantResponseDto createParticipant(Long userId, String name, String refLink) {
         CreateParticipantDto createParticipantDto = new CreateParticipantDto(userId, name, refLink);
 
-        ResponseEntity<ParticipantResponseDto> response = participantApiClient
-                .post()
-                .uri("/participants")
-                .bodyValue(createParticipantDto)
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .toEntity(ParticipantResponseDto.class)
-                .block();
+        try {
+            ResponseEntity<ParticipantResponseDto> response = participantApiClient
+                    .post()
+                    .uri("/participants")
+                    .bodyValue(createParticipantDto)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .toEntity(ParticipantResponseDto.class)
+                    .block();
 
-        assert response != null;
-        log.info("[{}] user registered", createParticipantDto.getTgUserId());
-        return response.getBody();
+            assert response != null;
+            log.info("[{}] user registered", createParticipantDto.getTgUserId());
+            return response.getBody();
+        } catch (WebClientResponseException.InternalServerError e) {
+            log.error("internal server error: {}", e.getMessage());
+            return null;
+        } catch (WebClientResponseException e) {
+            log.warn("{}", e.getMessage());
+            return null;
+        }
     }
 
 }
