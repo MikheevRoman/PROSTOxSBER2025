@@ -1,0 +1,39 @@
+.not-found-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.not-found-content {
+    max-width: 400px;
+    padding: 2rem;
+}
+
+.not-found-content h2 {
+    font-size: 1.5rem;
+    color: #1a73e8;
+    margin-bottom: 1rem;
+}
+
+.not-found-content p {
+    font-size: 1rem;
+    color: #5f6368;
+    margin-bottom: 1.5rem;
+}
+
+.button {
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.button:hover {
+    background-color: #1669c1;
+}
