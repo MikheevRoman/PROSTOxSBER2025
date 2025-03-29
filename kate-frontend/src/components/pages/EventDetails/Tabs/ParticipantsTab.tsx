@@ -6,7 +6,7 @@ import {UUID} from "node:crypto";
 import {useTelegramAuth} from "../../../../context/TelegramAuthContext";
 
 const ParticipantsTab = ({ event }) => {
-  const eventId = useParams() as unknown as UUID;
+  const eventId = (useParams()).eventId as UUID;
   const [participants, setParticipants] = useState(event.participants || []);
   const { user } = useTelegramAuth();
 
