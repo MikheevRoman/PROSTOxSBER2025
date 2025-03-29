@@ -1,27 +1,31 @@
-package ru.sberhack2025.telegrambot.services.participants;
+package ru.sberhack2025.telegrambot.services.procurements;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ParticipantResponseDto {
+public class ProcurementsResponseDto {
 
     private UUID id;
 
     private String name;
 
-    private LocalDateTime createdAt;
+    private Long price;
 
-    private String error;
+    private String comment;
 
-    private String description;
+    private CompletionStatus completionStatus;
+
+    private List<UUID> contributors;
+
+    private FundraisingStatus fundraisingStatus;
 
 }

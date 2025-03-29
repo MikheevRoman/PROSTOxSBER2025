@@ -1,4 +1,4 @@
-package ru.sberhack2025.telegrambot.services.participants;
+package ru.sberhack2025.telegrambot.services.participant;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

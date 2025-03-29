@@ -15,10 +15,16 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import ru.sberhack2025.telegrambot.exception.NotificationException;
-import ru.sberhack2025.telegrambot.services.participants.ParticipantService;
+import ru.sberhack2025.telegrambot.services.event.EventResponseDto;
+import ru.sberhack2025.telegrambot.services.event.EventService;
+import ru.sberhack2025.telegrambot.services.participant.ParticipantResponseDto;
+import ru.sberhack2025.telegrambot.services.participant.ParticipantService;
+import ru.sberhack2025.telegrambot.services.procurements.ProcurementsResponseDto;
+import ru.sberhack2025.telegrambot.services.procurements.ProcurementsService;
 import ru.sberhack2025.telegrambot.services.user.UserService;
 import ru.sberhack2025.telegrambot.supplier.BotMessageSupplier;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -35,19 +41,27 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer, SpringLongPol
 
     private final ParticipantService participantService;
 
+    private final ProcurementsService procurementsService;
+
+    private final EventService eventService;
+
     @Autowired
     public Bot(
             @Qualifier("botToken") String botToken,
             TelegramClient telegramClient,
             BotMessageSupplier botMessageSupplier,
             UserService userService,
-            ParticipantService participantService
+            ParticipantService participantService,
+            ProcurementsService procurementsService,
+            EventService eventService
     ) {
         this.botToken = botToken;
         this.botMessageSupplier = botMessageSupplier;
         this.telegramClient = telegramClient;
         this.userService = userService;
         this.participantService = participantService;
+        this.procurementsService = procurementsService;
+        this.eventService = eventService;
     }
 
     @Override
@@ -80,11 +94,33 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer, SpringLongPol
                 }
                 sendMessage(botMessageSupplier.getWelcomeMessage(chatId));
             } else if (messageText.equals(Command.GET_DEBT_LIST.COMMAND_TEXT)) {
-                //TODO
+                List<EventResponseDto> events = eventService.getUserEvents(chatId);
+                events.stream()
+                        .map(eventResponseDto -> participantService.getEventParticipant(eventResponseDto.getId(), chatId))
+                        .map(ParticipantResponseDto::getId)
+                        .map(procurementsService::getContributedProcurements)
+                        .forEach(procurement -> showContributedProcurementList(chatId, procurement));
             } else if (messageText.equals(Command.GET_MY_TASKS.COMMAND_TEXT)) {
-                //TODO
+                List<EventResponseDto> events = eventService.getUserEvents(chatId);
+                events.stream()
+                        .map(eventResponseDto -> participantService.getEventParticipant(eventResponseDto.getId(), chatId))
+                        .map(ParticipantResponseDto::getId)
+                        .map(procurementsService::getResponsibleProcurements)
+                        .forEach(procurement -> showResponsibleProcurementList(chatId, procurement));
             }
         }
+    }
+
+    private void showResponsibleProcurementList(Long chatId, List<ProcurementsResponseDto> procurements) {
+        procurements.stream()
+                .map(procurement -> botMessageSupplier.getResponsibleDescription(chatId, procurement))
+                .forEach(this::sendMessage);
+    }
+
+    private void showContributedProcurementList(Long chatId, List<ProcurementsResponseDto> procurements) {
+        procurements.stream()
+                .map(procurement -> botMessageSupplier.getProcurementDescription(chatId, procurement))
+                .forEach(this::sendMessage);
     }
 
     private String getFullName(User user) {
