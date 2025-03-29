@@ -115,7 +115,7 @@ const EventDetails = () => {
         title={event.name}
         showBackButton={true}
         actionButton={
-          event.isOrganizer && (
+          isCurrentUserOrganizer() && (
             <button className="button secondary" onClick={handleEditEvent}>
               Редактировать
             </button>

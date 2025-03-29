@@ -15,9 +15,6 @@ interface EventEntity {
 
     // ?????
     purchases: Purchase[],
-    organizer: UUID,
-    isOrganizer: boolean
-    participants: UUID[]
 }
 
 export default EventEntity;

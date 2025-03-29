@@ -32,11 +32,8 @@ const CreateEvent = () => {
     const eventFromForm: EventEntity = {
       createdAt: Date.prototype,
       eventRefCode: "",
-      isOrganizer: false,
-      organizer: v4() as UUID, // TODO: REPLACE WITH TG ID
       organizerCardInfo: "",
-      organizerTgUserId: 0,
-      participants: [],
+      organizerTgUserId: user.id,
       purchases: [],
       id: v4() as UUID,
       name: formData?.name,
