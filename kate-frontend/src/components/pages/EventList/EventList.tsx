@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../common/Header';
-import {deleteEvent} from '../../../services/eventService';
 import './EventList.css';
 import {UUID} from "node:crypto";
 import EventEntity from "../../../model/EventEntity";
 import { useTelegramAuth } from '../../../context/TelegramAuthContext';
-import {getEvents} from "../../../api/endpoints/eventEndpoints";
+import {deleteEvent, getEvents} from "../../../api/endpoints/eventEndpoints";
 
 const EventList = () => {
   const [events, setEvents] = useState<EventEntity[]>([]);

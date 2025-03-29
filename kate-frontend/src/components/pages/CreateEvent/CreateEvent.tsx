@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../common/Header';
-import { createEvent, getEventInviteLink } from '../../../services/eventService';
+import { getEventInviteLink } from '../../../services/eventService';
 import './CreateEvent.css';
 import EventFormData from "../../../model/EventFormData";
 import EventEntity from "../../../model/EventEntity";
@@ -9,6 +9,7 @@ import ApiErrorResponse from '../../../model/ApiErrorResponse';
 import {v4} from "uuid";
 import {UUID} from "node:crypto";
 import {useTelegramAuth} from "../../../context/TelegramAuthContext";
+import {createEvent} from "../../../api/endpoints/eventEndpoints";
 
 const CreateEvent = () => {
   const [formData, setFormData] = useState<EventFormData>();

@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../../common/Header';
-import { updateEvent } from '../../../services/eventService';
 import './EditEvent.css';
 import EventFormData from "../../../model/EventFormData";
 import {UUID} from "node:crypto";
 import EventEntity from "../../../model/EventEntity";
 import {v4} from "uuid";
 import {useTelegramAuth} from "../../../context/TelegramAuthContext";
-import {getEventById} from "../../../api/endpoints/eventEndpoints";
+import {getEventById, updateEvent} from "../../../api/endpoints/eventEndpoints";
 
 
 const EditEvent = () => {
