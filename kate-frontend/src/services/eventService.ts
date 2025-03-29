@@ -14,6 +14,7 @@ const API_BASE_URL = "https://prosto-sber-2025.gros.pro/api/company-events";
 // Генерация уникального UUID
 const generateId = () => v4();
 
+// TODO: Использовать API вместо локального хранилища
 // Добавление покупки
 export const addPurchase = async (userId: number, eventId: UUID, purchaseData: any) => {
   const events = await getEvents(userId);
@@ -40,6 +41,7 @@ export const addPurchase = async (userId: number, eventId: UUID, purchaseData: a
   return newPurchase;
 };
 
+// TODO: Использовать API вместо локального хранилища
 // Обновление покупки
 export const updatePurchase = async (
     userId: number,
@@ -65,11 +67,11 @@ export const updatePurchase = async (
     e.id === eventId ? updatedEvent : e
   );
 
-  // TODO: надо будет убрать
   localStorage.setItem(EVENTS_KEY, JSON.stringify(updatedEvents));
   return updatedPurchases.find(p => p.id === purchaseId);
 };
 
+// TODO: Использовать API вместо локального хранилища
 // Удаление покупки
 export const deletePurchase = async (
     userId: number,
@@ -95,6 +97,7 @@ export const deletePurchase = async (
   return true;
 };
 
+// TODO: Использовать API вместо локального хранилища
 // Получение приглашения для мероприятия
 export const getEventInviteLink = (eventId: UUID): string => {
   return `${window.location.origin}/event/${eventId}`;
@@ -126,6 +129,7 @@ export const addParticipant = async (
   return true;
 };
 
+// TODO: Использовать API вместо локального хранилища
 // Удаление участника из мероприятия
 export const removeParticipant = async (
     userId: number,
@@ -152,6 +156,7 @@ export const removeParticipant = async (
   return true;
 };
 
+// TODO: Использовать API вместо локального хранилища
 // Назначение нового организатора
 export const assignNewOrganizer = async (
     userId: number,
