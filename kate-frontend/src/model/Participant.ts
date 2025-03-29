@@ -1,5 +1,7 @@
+import {UUID} from "node:crypto";
+
 interface Participant {
-    id: string;
+    id: UUID;
     name?: string;
     tgUserId?: number;
     createdAt?: string;

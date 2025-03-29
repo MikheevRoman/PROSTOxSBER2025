@@ -1,59 +1,66 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
 import Header from '../../common/Header';
-import { addPurchase, updatePurchase } from '../../../services/eventService';
 import './AddPurchase.css';
 import {UUID} from "node:crypto";
 import ProcurementFormData from "../../../model/ProcurementFormData";
 import Procurement, {CompletionStatus, FundraisingStatus} from "../../../model/Procurement";
 import {v4} from "uuid";
 import {useTelegramAuth} from "../../../context/TelegramAuthContext";
-import {getEventById} from "../../../api/endpoints/eventEndpoints";
+import {addProcurement, getProcurementById, updateProcurement} from "../../../api/endpoints/procurementEndpoints";
+import {getEventParticipants} from "../../../api/endpoints/participantsEndpoints";
+import Participant from "../../../model/Participant";
 
 const AddPurchase = () => {
-  const { eventIdString, purchaseIdString } = useParams();
-  const eventId = eventIdString as UUID;
-  const purchaseId = purchaseIdString as UUID;
+  const eventId: UUID = (useParams()).eventId as UUID;
+  const purchaseId: UUID = (useParams()).purchaseId as UUID;
   const { user } = useTelegramAuth();
   const navigate = useNavigate();
-  const [event, setEvent] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<ProcurementFormData>();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [participant, setParticipant] = useState<Participant>();
 
   useEffect(() => {
     const loadData = async () => {
-      const eventData = await getEventById(user.id, eventId);
-      if (eventData) {
-        setEvent(eventData);
+      setLoading(true);
+      const eventParticipants = (await getEventParticipants(eventId));
+      const participant = (eventParticipants as Participant[]).find(e => e.tgUserId === user.id);
+      setParticipant(participant);
 
-        // Если это редактирование, загружаем данные покупки
-        if (purchaseId) {
-          const purchase = eventData.purchases.find(p => p.id === purchaseId);
-          if (purchase) {
-            setFormData({
-              name: purchase.name,
-              price: purchase.price, // int
-              comment: purchase.comment,
-              completionStatus: purchase.completionStatus,
-              contributors: purchase.contributors, // List<Participant>
-              fundraisingStatus: purchase.fundraisingStatus,
-            });
-            setIsEditing(true);
-          } else {
-            // Если покупка не найдена, перенаправляем обратно
-            navigate(`/event/${eventId}`);
-          }
+      // Если это редактирование, загружаем данные покупки
+      if (purchaseId) {
+        const purchase = await getProcurementById(purchaseId);
+        if (purchase) {
+          setFormData({
+            name: purchase.name,
+            price: purchase.price,
+            comment: purchase.comment,
+            completionStatus: purchase.completionStatus,
+            contributors: purchase.contributors,
+            fundraisingStatus: purchase.fundraisingStatus,
+          });
+          setIsEditing(true);
+        } else {
+          // Если покупка не найдена, перенаправляем обратно
+          navigate(`/event/${eventId}`);
         }
-      } else {
-        // Если мероприятие не найдено, перенаправляем на главную
-        navigate('/');
+      }
+      else {
+        setFormData({
+          name: '',
+          price: 0,
+          comment: '',
+          completionStatus: CompletionStatus.IN_PROGRESS,
+          contributors: [],
+          fundraisingStatus: FundraisingStatus.NONE,
+        });
       }
       setLoading(false);
     };
 
     loadData();
-  }, [eventId, purchaseId, navigate]);
+  }, [eventId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -67,20 +74,20 @@ const AddPurchase = () => {
     e.preventDefault();
     
     const purchaseData: Procurement = {
-      id: v4() as UUID, // uuid
+      id: v4() as UUID,
       name: formData.name,
-      price: formData.price,// int
+      price: formData.price,
       comment: formData.comment,
-      responsible: v4() as UUID, // uuid of responsible person
+      responsibleId: participant.id,
       completionStatus: formData.completionStatus,
       contributors: [], // List<Participant> // TODO: Implement
       fundraisingStatus: formData.fundraisingStatus
     };
     
     if (isEditing) {
-      await updatePurchase(user.id, eventId, purchaseId, purchaseData);
+      await updateProcurement(eventId, purchaseId, purchaseData);
     } else {
-      await addPurchase(user.id, eventId, purchaseData);
+      await addProcurement(eventId, purchaseData);
     }
     
     navigate(`/event/${eventId}`);
@@ -96,15 +103,55 @@ const AddPurchase = () => {
         title={isEditing ? "Редактирование закупки" : "Добавление закупки"} 
         showBackButton={true} 
       />
+      <div className="procurement-form-data">
+        <h2>Procurement Details</h2>
 
+        <div className="form-field">
+          <label>Name:</label>
+          <span>{formData?.name}</span>
+        </div>
+
+        <div className="form-field">
+          <label>Price:</label>
+          <span>${formData?.price.toString()}</span>
+        </div>
+
+        <div className="form-field">
+          <label>Comment:</label>
+          <p>{formData?.comment}</p>
+        </div>
+
+        <div className="form-field">
+          <label>Completion Status:</label>
+          <span className={`status-badge ${formData?.completionStatus.toLowerCase()}`}>
+      {formData?.completionStatus}
+    </span>
+        </div>
+
+        <div className="form-field">
+          <label>Fundraising Status:</label>
+          <span className={`status-badge ${formData?.fundraisingStatus.toLowerCase()}`}>
+      {formData?.fundraisingStatus}
+    </span>
+        </div>
+
+        <div className="form-field">
+          <label>Contributors ({formData?.contributors.length}):</label>
+          <ul className="contributors-list">
+            {formData?.contributors.map(id => (
+                <li key={id}>{id}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
       <form className="purchase-form" onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="title">Название</label>
+          <label htmlFor="name">Название</label>
           <input
             type="text"
-            id="title"
-            name="title"
-            value={formData.name}
+            id="name"
+            name="name"
+            value={formData?.name}
             onChange={handleChange}
             required
             placeholder="Название покупки"
@@ -112,12 +159,12 @@ const AddPurchase = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="cost">Стоимость (руб.)</label>
+          <label htmlFor="price">Стоимость (руб.)</label>
           <input
             type="number"
-            id="cost"
-            name="cost"
-            value={formData.price}
+            id="price"
+            name="price"
+            value={formData?.price}
             onChange={handleChange}
             placeholder="Стоимость"
             min="0"
@@ -146,7 +193,7 @@ const AddPurchase = () => {
           <select
             id="contributors"
             name="contributors"
-            value={formData.contributors}
+            value={formData?.contributors}
             onChange={handleChange}
           >
             <option value="all">Все участники</option>
@@ -169,40 +216,38 @@ const AddPurchase = () => {
         {/*</div>*/}
 
         <div className="form-group">
-          <label htmlFor="status">Статус закупки</label>
+          <label htmlFor="completionStatus">Статус закупки</label>
           <select
-            id="status"
-            name="status"
-            value={formData.completionStatus}
+            id="completionStatus"
+            name="completionStatus"
+            value={formData?.completionStatus}
             onChange={handleChange}
           >
-            <option value="NOT_STARTED">Не начато</option>
             <option value="IN_PROGRESS">В процессе</option>
-            <option value="COMPLETED">Выполнено</option>
+            <option value="DONE">Выполнено</option>
           </select>
         </div>
 
         <div className="form-group">
-          <label htmlFor="status">Статус сбора средств</label>
+          <label htmlFor="fundraisingStatus">Статус сбора средств</label>
           <select
-              id="status"
-              name="status"
-              value={formData.fundraisingStatus}
+              id="fundraisingStatus"
+              name="fundraisingStatus"
+              value={formData?.fundraisingStatus}
               onChange={handleChange}
           >
-            <option value="NOT_STARTED">Не начато</option>
-            <option value="IN_PROGRESS">В процессе</option>
-            <option value="FUNDED">Собрано</option>
-            <option value="FAILED">Не собрали</option>
+            <option value="NONE">Не планируется</option>
+            <option value="PLANNING">Планируется</option>
+            <option value="DONE">Собрано</option>
           </select>
         </div>
 
         <div className="form-group">
-          <label htmlFor="note">Примечание</label>
+          <label htmlFor="comment">Примечание</label>
           <textarea
-            id="note"
-            name="note"
-            value={formData.comment}
+            id="comment"
+            name="comment"
+            value={formData?.comment}
             onChange={handleChange}
             placeholder="Дополнительная информация"
             rows={3}

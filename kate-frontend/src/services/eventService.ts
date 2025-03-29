@@ -14,88 +14,88 @@ const API_BASE_URL = "https://prosto-sber-2025.gros.pro/api/company-events";
 // Генерация уникального UUID
 const generateId = () => v4();
 
-// TODO: Использовать API вместо локального хранилища
-// Добавление покупки
-export const addPurchase = async (userId: number, eventId: UUID, purchaseData: any) => {
-  const events = await getEvents(userId);
-  const event = events.find(e => e.id === eventId);
-  
-  if (!event) return null;
-  
-  const newPurchase = {
-    id: generateId(),
-    ...purchaseData,
-    createdAt: new Date().toISOString()
-  };
-  
-  const updatedEvent = {
-    ...event,
-    purchases: [...event.purchases, newPurchase]
-  };
-  
-  const updatedEvents = events.map(e => 
-    e.id === eventId ? updatedEvent : e
-  );
-  
-  localStorage.setItem(EVENTS_KEY, JSON.stringify(updatedEvents));
-  return newPurchase;
-};
-
-// TODO: Использовать API вместо локального хранилища
-// Обновление покупки
-export const updatePurchase = async (
-    userId: number,
-    eventId: UUID,
-    purchaseId: any,
-    purchaseData: any
-) => {
-  const events = await getEvents(userId);
-  const event = events.find(e => e.id === eventId);
-  
-  if (!event) return null;
-  
-  const updatedPurchases = event.purchases.map(purchase => 
-    purchase.id === purchaseId ? { ...purchase, ...purchaseData } : purchase
-  );
-  
-  const updatedEvent = {
-    ...event,
-    purchases: updatedPurchases
-  };
-  
-  const updatedEvents = events.map(e => 
-    e.id === eventId ? updatedEvent : e
-  );
-
-  localStorage.setItem(EVENTS_KEY, JSON.stringify(updatedEvents));
-  return updatedPurchases.find(p => p.id === purchaseId);
-};
-
-// TODO: Использовать API вместо локального хранилища
-// Удаление покупки
-export const deletePurchase = async (
-    userId: number,
-    eventId: UUID,
-    purchaseId: any) => {
-  const events = await getEvents(userId);
-  const event = events.find(e => e.id === eventId);
-  
-  if (!event) return false;
-  
-  const updatedPurchases = event.purchases.filter(p => p.id !== purchaseId);
-  
-  const updatedEvent = {
-    ...event,
-    purchases: updatedPurchases
-  };
-  
-  const updatedEvents = events.map(e => 
-    e.id === eventId ? updatedEvent : e
-  );
-  
-  localStorage.setItem(EVENTS_KEY, JSON.stringify(updatedEvents));
-  return true;
-};
+// // TODO: Использовать API вместо локального хранилища
+// // Добавление покупки
+// export const addPurchase = async (userId: number, eventId: UUID, purchaseData: any) => {
+//   const events = await getEvents(userId);
+//   const event = events.find(e => e.id === eventId);
+//
+//   if (!event) return null;
+//
+//   const newPurchase = {
+//     id: generateId(),
+//     ...purchaseData,
+//     createdAt: new Date().toISOString()
+//   };
+//
+//   const updatedEvent = {
+//     ...event,
+//     purchases: [...event.purchases, newPurchase]
+//   };
+//
+//   const updatedEvents = events.map(e =>
+//     e.id === eventId ? updatedEvent : e
+//   );
+//
+//   localStorage.setItem(EVENTS_KEY, JSON.stringify(updatedEvents));
+//   return newPurchase;
+// };
+//
+// // TODO: Использовать API вместо локального хранилища
+// // Обновление покупки
+// export const updatePurchase = async (
+//     userId: number,
+//     eventId: UUID,
+//     purchaseId: any,
+//     purchaseData: any
+// ) => {
+//   const events = await getEvents(userId);
+//   const event = events.find(e => e.id === eventId);
+//
+//   if (!event) return null;
+//
+//   const updatedPurchases = event.purchases.map(purchase =>
+//     purchase.id === purchaseId ? { ...purchase, ...purchaseData } : purchase
+//   );
+//
+//   const updatedEvent = {
+//     ...event,
+//     purchases: updatedPurchases
+//   };
+//
+//   const updatedEvents = events.map(e =>
+//     e.id === eventId ? updatedEvent : e
+//   );
+//
+//   localStorage.setItem(EVENTS_KEY, JSON.stringify(updatedEvents));
+//   return updatedPurchases.find(p => p.id === purchaseId);
+// };
+//
+// // TODO: Использовать API вместо локального хранилища
+// // Удаление покупки
+// export const deletePurchase = async (
+//     userId: number,
+//     eventId: UUID,
+//     purchaseId: any) => {
+//   const events = await getEvents(userId);
+//   const event = events.find(e => e.id === eventId);
+//
+//   if (!event) return false;
+//
+//   const updatedPurchases = event.purchases.filter(p => p.id !== purchaseId);
+//
+//   const updatedEvent = {
+//     ...event,
+//     purchases: updatedPurchases
+//   };
+//
+//   const updatedEvents = events.map(e =>
+//     e.id === eventId ? updatedEvent : e
+//   );
+//
+//   localStorage.setItem(EVENTS_KEY, JSON.stringify(updatedEvents));
+//   return true;
+// };
 
 // TODO: Использовать API вместо локального хранилища
 // Получение приглашения для мероприятия
@@ -110,9 +110,9 @@ export const addParticipant = async (
     participantId: UUID) => {
   const events = await getEvents(userId);
   const event = events.find(e => e.id === eventId);
-  
+
   if (!event) return false;
-  
+
   // Проверка, не является ли пользователь уже участником
   // if (event.participants.includes(participantId)) return true;
   //
@@ -124,7 +124,7 @@ export const addParticipant = async (
   // const updatedEvents = events.map(e =>
   //   e.id === eventId ? updatedEvent : e
   // );
-  
+
   // localStorage.setItem(EVENTS_KEY, JSON.stringify(updatedEvents));
   return true;
 };

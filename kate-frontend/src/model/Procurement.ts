@@ -1,27 +1,25 @@
 import {UUID} from "node:crypto";
 
 interface Procurement {
-    id: string; // uuid
+    id: UUID;
     name: string;
-    price: number; // int
+    price: number;
     comment: string;
-    responsible: string; // uuid of responsible person
+    responsibleId: string;
     completionStatus: CompletionStatus;
-    contributors: UUID[]; // List<Participant>
+    contributors: UUID[];
     fundraisingStatus: FundraisingStatus;
 }
 
 export default Procurement;
 
 export enum CompletionStatus {
-    NOT_STARTED = "NOT_STARTED",
     IN_PROGRESS = "IN_PROGRESS",
-    COMPLETED = "COMPLETED"
+    DONE = "DONE"
 }
 
 export enum FundraisingStatus {
-    NOT_STARTED = "NOT_STARTED",
-    IN_PROGRESS = "IN_PROGRESS",
-    FUNDED = "FUNDED",
-    FAILED = "FAILED"
+    NONE = "NONE",
+    IN_PROGRESS = "PLANNING",
+    DONE = "DONE"
 }

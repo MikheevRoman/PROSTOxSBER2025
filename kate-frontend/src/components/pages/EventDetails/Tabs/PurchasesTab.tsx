@@ -1,33 +1,52 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, MouseEventHandler} from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { updatePurchase } from '../../../../services/eventService';
 import './TabStyles.css';
 import {UUID} from "node:crypto";
 import {useTelegramAuth} from "../../../../context/TelegramAuthContext";
+import Procurement, {CompletionStatus, FundraisingStatus} from "../../../../model/Procurement";
+import EventEntity from "../../../../model/EventEntity";
+import {
+  getEventProcurements,
+  getProcurementById,
+  updateProcurement
+} from "../../../../api/endpoints/procurementEndpoints";
 
-const PurchasesTab = ({ event, onAddPurchase }) => {
-  const eventId = useParams() as unknown as UUID;
+interface PurchasesProps {
+  event: EventEntity;
+  onAddPurchase: MouseEventHandler<HTMLButtonElement>;
+}
+
+const PurchasesTab = (props: PurchasesProps) => {
+  const eventId: UUID = (useParams()).eventId as UUID;
+  const event: EventEntity = props.event;
+  const onAddPurchase = props.onAddPurchase;
+
   const navigate = useNavigate();
-  const [purchases, setPurchases] = useState([]);
+  const [purchases, setPurchases] = useState<Procurement[]>([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [budgetDifference, setBudgetDifference] = useState(0);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const { user } = useTelegramAuth();
 
-  useEffect(() => {
-    if (event && event.purchases) {
-      setPurchases(event.purchases);
-      
+  async function loadProcurements() {
+    if (event && event) {
+      const procurements = await getEventProcurements(event.id);
+      setPurchases(procurements);
+
       // Расчет общей суммы
-      const total = event.purchases.reduce((sum, purchase) => 
-        sum + (purchase.cost ? parseFloat(purchase.cost) : 0), 0);
+      const total = procurements.reduce((sum, purchase) =>
+          sum + (purchase.price ? purchase.price : 0), 0);
       setTotalAmount(total);
-      
+
       // Расчет разницы с бюджетом, если бюджет указан
       if (event.budget) {
         setBudgetDifference(event.budget - total);
       }
     }
+  }
+
+  useEffect(() => {
+    loadProcurements();
   }, [event]);
 
   const handleEditPurchase = (purchaseId, e) => {
@@ -37,7 +56,7 @@ const PurchasesTab = ({ event, onAddPurchase }) => {
 
   const handleAddToContributors = async (purchaseId, e) => {
     e.stopPropagation();
-    const purchase = purchases.find(p => p.id === purchaseId);
+    const purchase = await getProcurementById(purchaseId);
     if (!purchase) return;
 
     let newContributors = [];
@@ -55,7 +74,7 @@ const PurchasesTab = ({ event, onAddPurchase }) => {
       newContributors = ['currentUser'];
     }
 
-    await updatePurchase(user.id, eventId, purchaseId, { contributors: newContributors });
+    await updateProcurement(eventId, purchaseId, purchase);
     
     // Обновление состояния в UI
     setPurchases(prevPurchases => 
@@ -73,20 +92,28 @@ const PurchasesTab = ({ event, onAddPurchase }) => {
     setSortConfig({ key, direction });
   };
 
-  const getStatusText = (status) => {
+  const getStatusText = (status: CompletionStatus): string => {
     switch (status) {
-      case 'completed':
+      case CompletionStatus.DONE:
         return 'Выполнено';
-      case 'in_progress':
+      case CompletionStatus.IN_PROGRESS:
         return 'В процессе';
       default:
         return 'Не начато';
     }
   };
 
-  const getCollectionText = (collection) => {
-    if (!collection) return null;
-    return collection === 'planned' ? 'Планируется' : null;
+  const getCollectionText = (collection: FundraisingStatus): string => {
+    switch (collection) {
+      case FundraisingStatus.NONE:
+        return 'Не собирается';
+      case FundraisingStatus.IN_PROGRESS:
+        return 'Собирается';
+      case FundraisingStatus.DONE:
+        return 'Собрано';
+      default:
+        return 'Неизвестно';
+    }
   };
 
   const isUserContributor = (purchase) => {
@@ -189,8 +216,8 @@ const PurchasesTab = ({ event, onAddPurchase }) => {
                 <div key={purchase.id} className="purchase-card">
                   <div className="purchase-header">
                     <div className="purchase-title">
-                      <div className="primary-text">{index + 1}. {purchase.title}</div>
-                      <div className="secondary-text">{getStatusText(purchase.status)}</div>
+                      <div className="primary-text">{index + 1}. {purchase.name}</div>
+                      <div className="secondary-text">{getStatusText(purchase.completionStatus)}</div>
                     </div>
                     <div className="purchase-actions">
                       <button 
@@ -214,15 +241,15 @@ const PurchasesTab = ({ event, onAddPurchase }) => {
                   <div className="purchase-details">
                     <div className="purchase-info">
                       <span className="info-label">Стоимость:</span>
-                      <span className="info-value">{purchase.cost ? `${purchase.cost} руб.` : '—'}</span>
-                      {getCollectionText(purchase.collection) && (
-                        <span className="secondary-text">{getCollectionText(purchase.collection)}</span>
+                      <span className="info-value">{purchase.price ? `${purchase.price} руб.` : '—'}</span>
+                      {getCollectionText(purchase.fundraisingStatus) && (
+                        <span className="secondary-text">{getCollectionText(purchase.fundraisingStatus)}</span>
                       )}
                     </div>
                     <div className="purchase-info">
                       <span className="info-label">Ответственный:</span>
                       <span className="info-value">
-                        {purchase.responsible === 'currentUser' ? 'Вы' : (purchase.responsible || '—')}
+                        {purchase.responsibleId === 'currentUser' ? 'Вы' : (purchase.responsibleId || '—')}
                       </span>
                     </div>
                     <div className="purchase-info">
@@ -289,22 +316,22 @@ const PurchasesTab = ({ event, onAddPurchase }) => {
                   {sortedPurchases.map((purchase, index) => (
                     <tr key={purchase.id}>
                       <td className="combined-title">
-                        <div className="primary-text">{index + 1}. {purchase.title}</div>
-                        <div className="secondary-text">{getStatusText(purchase.status)}</div>
+                        <div className="primary-text">{index + 1}. {purchase.name}</div>
+                        <div className="secondary-text">{getStatusText(purchase.completionStatus)}</div>
                       </td>
                       <td className="combined-cost">
-                        <div className="primary-text">{purchase.cost ? `${purchase.cost} руб.` : '—'}</div>
-                        {getCollectionText(purchase.collection) && (
-                          <div className="secondary-text">{getCollectionText(purchase.collection)}</div>
+                        <div className="primary-text">{purchase.price ? `${purchase.price} руб.` : '—'}</div>
+                        {getCollectionText(purchase.fundraisingStatus) && (
+                          <div className="secondary-text">{getCollectionText(purchase.fundraisingStatus)}</div>
                         )}
                       </td>
                       <td>
-                        {purchase.responsible === 'currentUser' ? 'Вы' : (purchase.responsible || '—')}
+                        {purchase.responsibleId === 'currentUser' ? 'Вы' : (purchase.responsibleId || '—')}
                       </td>
                       <td>
                         {getContributorsText(purchase.contributors)}
                       </td>
-                      <td>{getStatusText(purchase.status)}</td>
+                      <td>{getStatusText(purchase.completionStatus)}</td>
                       <td className="actions-cell">
                         <button 
                           className="action-button edit"

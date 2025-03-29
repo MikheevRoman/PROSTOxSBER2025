@@ -1,49 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { updatePurchase } from '../../../../services/eventService';
 import './TabStyles.css';
 import {UUID} from "node:crypto";
 import {useTelegramAuth} from "../../../../context/TelegramAuthContext";
+import {
+  getAssignedProcurementsForParticipant,
+  getProcurementById,
+  updateProcurement
+} from "../../../../api/endpoints/procurementEndpoints";
+import Procurement, {CompletionStatus} from "../../../../model/Procurement";
+import {getEventParticipants} from "../../../../api/endpoints/participantsEndpoints";
+import Participant from "../../../../model/Participant";
 
 const MyTasksTab = ({ event }) => {
-  const eventId = useParams() as unknown as UUID;
-  const [tasks, setTasks] = useState([]);
+  const eventId: UUID = (useParams()).eventId as UUID;
+  const [tasks, setTasks] = useState<Procurement[]>([]);
   const { user } = useTelegramAuth();
 
-  useEffect(() => {
-    if (event && event.purchases) {
-      // Фильтрация покупок, где текущий пользователь является ответственным
-      const userTasks = event.purchases.filter(purchase => {
-        return purchase.responsible === 'currentUser';
-      });
-      
-      setTasks(userTasks);
-    }
-  }, [event]);
+  async function loadTasks() {
+    // Фильтрация покупок, где текущий пользователь является ответственным
+    const eventParticipants = (await getEventParticipants(eventId));
+    const participant = (eventParticipants as Participant[]).find(e => e.tgUserId === user.id);
+    const userTasks = await getAssignedProcurementsForParticipant(participant.id);
+    setTasks(userTasks);
+  }
 
-  const handleTaskStatusChange = async (taskId, isCompleted) => {
-    const status = isCompleted ? 'completed' : 'in_progress';
-    await updatePurchase(user.id, eventId, taskId, { status });
+  useEffect(() => {
+    if (eventId) {
+      loadTasks();
+    }
+  }, [eventId]);
+
+  const handleTaskStatusChange = async (taskId: UUID, newStatus: CompletionStatus) => {
+    let procurementToUpdate = await getProcurementById(taskId);
+    procurementToUpdate.completionStatus = newStatus;
+    await updateProcurement(eventId, taskId, procurementToUpdate);
     
-    // Обновление состояния в UI
-    setTasks(prevTasks => 
-      prevTasks.map(task => 
-        task.id === taskId ? { ...task, status } : task
-      )
-    );
+    loadTasks();
   };
 
-  const handleCostChange = async(taskId, newCost) => {
-    if (newCost === '' || !isNaN(newCost)) {
-      const costValue = newCost === '' ? null : parseFloat(newCost);
-      await updatePurchase(user.id, eventId, taskId, { cost: costValue });
-      
-      // Обновление состояния в UI
-      setTasks(prevTasks => 
-        prevTasks.map(task => 
-          task.id === taskId ? { ...task, cost: costValue } : task
-        )
-      );
+  const handleCostChange = async(taskId: UUID, newCostString: string) => {
+    if (newCostString) {
+      let procurementToUpdate = await getProcurementById(taskId);
+      procurementToUpdate.price = parseFloat(newCostString);
+      await updateProcurement(eventId, taskId, procurementToUpdate);
+
+      loadTasks();
     }
   };
 
@@ -68,18 +70,18 @@ const MyTasksTab = ({ event }) => {
               </tr>
             </thead>
             <tbody>
-              {tasks.map((task, index) => (
+              {tasks && tasks.map((task, index) => (
                 <tr key={task.id}>
                   <td>
-                    <div>{index + 1}. {task.title}</div>
-                    {task.note && (
-                      <div className="secondary-text">{task.note}</div>
+                    <div>{index + 1}. {task.name}</div>
+                    {task.comment && (
+                      <div className="secondary-text">{task.comment}</div>
                     )}
                   </td>
                   <td>
                     <input
                       type="number"
-                      value={task.cost || ''}
+                      value={task.price || ''}
                       onChange={(e) => handleCostChange(task.id, e.target.value)}
                       placeholder="Укажите стоимость"
                       min="0"
@@ -88,13 +90,14 @@ const MyTasksTab = ({ event }) => {
                   </td>
                   <td>
                     <label className="task-status">
-                      <input
-                        type="checkbox"
-                        checked={task.status === 'completed'}
-                        onChange={(e) => handleTaskStatusChange(task.id, e.target.checked)}
-                        className="task-checkbox"
-                      />
-                      Выполнено
+                      <select
+                          value={task.completionStatus}
+                          onChange={(e) => handleTaskStatusChange(task.id, e.target.value as CompletionStatus)}
+                          className="task-status-select"
+                      >
+                        <option value={CompletionStatus.IN_PROGRESS}>В процессе</option>
+                        <option value={CompletionStatus.DONE}>Выполнено</option>
+                      </select>
                     </label>
                   </td>
                 </tr>

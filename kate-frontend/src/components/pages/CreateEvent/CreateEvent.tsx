@@ -34,7 +34,6 @@ const CreateEvent = () => {
       eventRefCode: "",
       organizerCardInfo: "",
       organizerTgUserId: user.id,
-      purchases: [],
       id: v4() as UUID,
       name: formData?.name,
       date: formData?.date ? new Date(formData?.date) : Date.prototype,

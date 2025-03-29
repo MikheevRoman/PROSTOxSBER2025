@@ -11,7 +11,7 @@ import {getEventById, updateEvent} from "../../../api/endpoints/eventEndpoints";
 
 
 const EditEvent = () => {
-  const eventId = useParams() as unknown as UUID;
+  const eventId: UUID = (useParams()).eventId as UUID;
   const navigate = useNavigate();
   const [formData, setFormData] = useState<EventFormData>();
   const [loading, setLoading] = useState(true);
@@ -69,7 +69,6 @@ const EditEvent = () => {
       eventRefCode: "",
       organizerCardInfo: "",
       organizerTgUserId: user.id,
-      purchases: [],
       id: v4() as UUID,
       name: formData?.name || "",
       date: formData?.date ? Date.parse(formData?.date) as unknown as Date : Date.prototype,
