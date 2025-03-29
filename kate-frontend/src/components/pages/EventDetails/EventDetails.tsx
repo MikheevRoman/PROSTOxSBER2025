@@ -14,7 +14,7 @@ import EventEntity from "../../../model/EventEntity";
 import {useTelegramAuth} from "../../../context/TelegramAuthContext";
 
 const EventDetails = () => {
-  const eventId = useParams() as unknown as UUID;
+  const eventId: UUID = (useParams()).eventId as UUID;
   const navigate = useNavigate();
   const [event, setEvent] = useState<EventEntity | null>(null);
   const [activeTab, setActiveTab] = useState('purchases');
