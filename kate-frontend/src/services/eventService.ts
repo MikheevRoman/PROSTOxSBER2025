@@ -14,58 +14,84 @@ const API_BASE_URL = "https://prosto-sber-2025.gros.pro/api/company-events";
 const generateId = () => v4();
 
 /**
- * Получение всех мероприятий
- * @returns {Array} Массив объектов мероприятий
+ * Получение мероприятий пользователя
+ * @param userId ID пользователя Telegram
+ * @returns {Promise<EventEntity[]>} Массив мероприятий
  */
-export async function getEvents(): Promise<EventEntity[]> {
-  return axios.get(API_BASE_URL).then(response => response.data);
-}
-
-/**
- * Получение мероприятия по ID
- * @returns {Array} Массив объектов мероприятий
- * @param eventId UUID мероприятия
- */
-export async function getEventById(eventId: UUID): Promise<EventEntity | null> {
-  return axios.get(API_BASE_URL + "/" + eventId.toString()).then(response => response.data);
-}
-
-// Создание нового мероприятия
-export async function createEvent(eventData: EventEntity): Promise<EventEntity | ApiErrorResponse> {
-  const newEvent = {
-    name: eventData.name
-  };
-
-  return axios.post(API_BASE_URL, newEvent)
-      .then((response) => response.data)
-      .catch((error) => {
-        console.log(error);
+export async function getEvents(userId: number): Promise<EventEntity[]> {
+  return axios.get(`${API_BASE_URL}/users/${userId}/events`)
+      .then(response => response.data)
+      .catch(error => {
+        console.error('Error fetching events:', error);
+        throw error;
       });
 }
 
 /**
- * Удаление мероприятия по ID
- * @returns {Array} Массив объектов мероприятий
+ * Получение конкретного мероприятия
+ * @param userId ID пользователя Telegram
  * @param eventId UUID мероприятия
+ * @returns {Promise<EventEntity | null>} Объект мероприятия или null
  */
-export async function deleteEvent(eventId: UUID)  {
-  return axios.delete(API_BASE_URL + "/" + eventId.toString()).then(response => response.data);
+export async function getEventById(userId: number, eventId: UUID): Promise<EventEntity | null> {
+  return axios.get(`${API_BASE_URL}/users/${userId}/events/${eventId}`)
+      .then(response => response.data)
+      .catch(error => {
+        console.error('Error fetching event:', error);
+        return null;
+      });
 }
 
-// Обновление мероприятия
-export const updateEvent = async (eventId: UUID, eventData: EventEntity) => {
-  const events = await getEvents();
-  const updatedEvents = events.map(event => 
-    event.id === eventId ? { ...event, ...eventData } : event
-  );
-  
-  localStorage.setItem(EVENTS_KEY, JSON.stringify(updatedEvents));
-  return getEventById(eventId);
+
+/**
+ * Создание нового мероприятия
+ * @param userId ID пользователя Telegram
+ * @param eventData Данные мероприятия
+ * @returns {Promise<EventEntity | ApiErrorResponse>}
+ */
+export async function createEvent(userId: number, eventData: EventEntity): Promise<EventEntity | ApiErrorResponse> {
+  return axios.post(`${API_BASE_URL}/users/${userId}/events`, eventData)
+      .then(response => response.data)
+      .catch(error => {
+        console.error('Error creating event:', error);
+        return error.response?.data as ApiErrorResponse || { error: 'Unknown error' };
+      });
+}
+
+/**
+ * Удаление мероприятия
+ * @param userId ID пользователя Telegram
+ * @param eventId UUID мероприятия
+ * @returns {Promise<void>}
+ */
+export async function deleteEvent(eventId: UUID): Promise<void> {
+  return axios.delete(`${API_BASE_URL}/events/${eventId}`)
+      .then(response => response.data)
+      .catch(error => {
+        console.error('Error deleting event:', error);
+        throw error;
+      });
+}
+
+/**
+ * Обновление мероприятия
+ * @param userId ID пользователя Telegram
+ * @param eventId UUID мероприятия
+ * @param eventData Новые данные мероприятия
+ * @returns {Promise<EventEntity>}
+ */
+export const updateEvent = async (userId: number, eventId: UUID, eventData: EventEntity): Promise<EventEntity> => {
+  return axios.put(`${API_BASE_URL}/users/${userId}/events/${eventId}`, eventData)
+      .then(response => response.data)
+      .catch(error => {
+        console.error('Error updating event:', error);
+        throw error;
+      });
 };
 
 // Добавление покупки
-export const addPurchase = async (eventId: UUID, purchaseData: any) => {
-  const events = await getEvents();
+export const addPurchase = async (userId: number, eventId: UUID, purchaseData: any) => {
+  const events = await getEvents(userId);
   const event = events.find(e => e.id === eventId);
   
   if (!event) return null;
@@ -90,8 +116,13 @@ export const addPurchase = async (eventId: UUID, purchaseData: any) => {
 };
 
 // Обновление покупки
-export const updatePurchase = async (eventId: UUID, purchaseId: any, purchaseData: any) => {
-  const events = await getEvents();
+export const updatePurchase = async (
+    userId: number,
+    eventId: UUID,
+    purchaseId: any,
+    purchaseData: any
+) => {
+  const events = await getEvents(userId);
   const event = events.find(e => e.id === eventId);
   
   if (!event) return null;
@@ -108,14 +139,18 @@ export const updatePurchase = async (eventId: UUID, purchaseId: any, purchaseDat
   const updatedEvents = events.map(e => 
     e.id === eventId ? updatedEvent : e
   );
-  
+
+  // TODO: надо будет убрать
   localStorage.setItem(EVENTS_KEY, JSON.stringify(updatedEvents));
   return updatedPurchases.find(p => p.id === purchaseId);
 };
 
 // Удаление покупки
-export const deletePurchase = async (eventId: UUID, purchaseId: any) => {
-  const events = await getEvents();
+export const deletePurchase = async (
+    userId: number,
+    eventId: UUID,
+    purchaseId: any) => {
+  const events = await getEvents(userId);
   const event = events.find(e => e.id === eventId);
   
   if (!event) return false;
@@ -141,8 +176,11 @@ export const getEventInviteLink = (eventId: UUID): string => {
 };
 
 // Добавление участника в мероприятие
-export const addParticipant = async (eventId: UUID, participantId: UUID) => {
-  const events = await getEvents();
+export const addParticipant = async (
+    userId: number,
+    eventId: UUID,
+    participantId: UUID) => {
+  const events = await getEvents(userId);
   const event = events.find(e => e.id === eventId);
   
   if (!event) return false;
@@ -164,8 +202,11 @@ export const addParticipant = async (eventId: UUID, participantId: UUID) => {
 };
 
 // Удаление участника из мероприятия
-export const removeParticipant = async (eventId: UUID, participantId: UUID) => {
-  const events = await getEvents();
+export const removeParticipant = async (
+    userId: number,
+    eventId: UUID,
+    participantId: UUID) => {
+  const events = await getEvents(userId);
   const event = events.find(e => e.id === eventId);
   
   if (!event) return false;
@@ -187,8 +228,12 @@ export const removeParticipant = async (eventId: UUID, participantId: UUID) => {
 };
 
 // Назначение нового организатора
-export const assignNewOrganizer = async (eventId: UUID, newOrganizerId: UUID) => {
-  const events = await getEvents();
+export const assignNewOrganizer = async (
+    userId: number,
+    eventId: UUID,
+    newOrganizerId: UUID
+) => {
+  const events = await getEvents(userId);
   const event = events.find(e => e.id === eventId);
   
   if (!event) return false;

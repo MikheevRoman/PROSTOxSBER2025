@@ -5,15 +5,22 @@ import {deleteEvent, getEvents} from '../../../services/eventService';
 import './EventList.css';
 import {UUID} from "node:crypto";
 import EventEntity from "../../../model/EventEntity";
+import { useTelegramAuth } from '../../../context/TelegramAuthContext';
 
 const EventList = () => {
   const [events, setEvents] = useState<EventEntity[]>([]);
   const navigate = useNavigate();
+  const { user } = useTelegramAuth();
 
   const loadEvents = async () => {
+    if (!user) {
+      console.error('User data not available');
+      return;
+    }
+
     let eventsList: EventEntity[] = [];
     try {
-      eventsList = await getEvents();
+      eventsList = await getEvents(user.id);
       setEvents(eventsList);
     }
     catch (error) {
@@ -24,7 +31,9 @@ const EventList = () => {
 
   useEffect(() => {
     // Загрузка списка мероприятий
-    loadEvents().catch((error) => console.log(error));
+    if (user) {
+      loadEvents().catch((error) => console.log(error));
+    }
   }, []);
 
   const handleCreateEvent = () => {
@@ -37,7 +46,9 @@ const EventList = () => {
 
   const handleDeleteEvent = async (clickEvent: React.MouseEvent<HTMLButtonElement, MouseEvent>, eventId: UUID) => {
     clickEvent.stopPropagation();
-    await deleteEvent(eventId);
+    if (!user) return;
+
+    await deleteEvent(eventId); // Добавляем userId для удаления
     await loadEvents();
   }
 

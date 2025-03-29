@@ -1,20 +1,13 @@
 import axios, {
-    AxiosHeaders,
     AxiosInstance,
-    AxiosRequestHeaders,
-    InternalAxiosRequestConfig, RawAxiosRequestHeaders
+    InternalAxiosRequestConfig,
+    AxiosHeaders, RawAxiosRequestHeaders
 } from 'axios';
+
+import TelegramUser from '../model/TelegramUser';
+
 import {useTelegramAuth} from "../context/TelegramAuthContext";
 
-interface TelegramUser {
-    id: number;
-    first_name?: string;
-    last_name?: string;
-    username?: string;
-    photo_url?: string;
-    auth_date?: number;
-    hash?: string;
-}
 
 /**
  * Интерфейс расширенного Axios клиента
@@ -94,7 +87,7 @@ const createApiClient = (getUser?: () => { user: TelegramUser | null }): ApiClie
 const baseApi = createApiClient();
 
 // Фабрика для создания экземпляра с доступом к контексту
-export const createApiClientWithContext = () => {
+export const useApiClientWithContext = () => {
     // Используем замыкание для доступа к контексту
     const { user } = useTelegramAuth();
     return createApiClient(() => ({ user }));
