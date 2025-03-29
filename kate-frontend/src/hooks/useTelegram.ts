@@ -50,12 +50,14 @@ export const useTelegram = () => {
                     };
 
                     setTg(mockTg);
-                    window.Telegram = { WebApp: mockTg }; // Добавляем мок в глобальную область
+                    window.Telegram = { WebApp: mockTg };
+                    localStorage.setItem("telegram_webapp", JSON.stringify(mockTg)); // Сохраняем мок-объект
                     return;
                 }
 
                 if (window.Telegram?.WebApp) {
                     setTg(window.Telegram.WebApp);
+                    localStorage.setItem("telegram_webapp", JSON.stringify(window.Telegram.WebApp)); // Кешируем
                 } else {
                     console.warn('Telegram WebApp not available');
                     setTg({
