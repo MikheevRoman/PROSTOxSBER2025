@@ -1,0 +1,42 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.10.xsd">
+
+    <property name="Int" value="INTEGER" dbms="all"/>
+
+    <property name="Long" value="BIGINT" dbms="all"/>
+
+    <property name="Boolean" value="BOOLEAN" dbms="postgresql"/>
+    <property name="Boolean" value="INTEGER" dbms="all"/>
+
+    <property name="String" value="VARCHAR" dbms="all"/>
+
+    <property name="StringMax" value="VARCHAR(4000)" dbms="all"/>
+
+    <property name="EntityId" value="UUID" dbms="all"/>
+
+    <property name="Enum" value="VARCHAR(50)" dbms="all"/>
+
+    <property name="Binary" value="VARBINARY" dbms="all"/>
+
+    <property name="Double" value="DOUBLE" dbms="all"/>
+
+    <property name="ZonedDateTime" value="VARCHAR(50)" dbms="all"/>
+
+    <property name="LocalDate" value="DATE" dbms="all"/>
+    <property name="LocalDateTime" value="TIMESTAMP" dbms="all"/>
+
+    <property name="BigDecimal" value="DECIMAL(21,2)" dbms="oracle"/>
+    <property name="BigDecimal" value="DECIMAL" dbms="all"/>
+
+    <property name="Instant" value="TIMESTAMP(9) WITH TIME ZONE" dbms="h2"/>
+    <property name="Instant" value="TIMESTAMP(9) WITH TIME ZONE" dbms="oracle"/>
+    <property name="Instant" value="TIMESTAMP WITHOUT TIME ZONE" dbms="all"/>
+
+    <property name="Clob" value="CLOB"/>
+
+    <property name="Blob" value="BYTEA" dbms="postgresql"/>
+    <property name="Blob" value="BLOB" dbms="all"/>
+
+</databaseChangeLog>

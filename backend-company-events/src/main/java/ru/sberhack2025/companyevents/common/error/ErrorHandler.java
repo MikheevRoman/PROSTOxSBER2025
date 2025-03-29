@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.sberhack2025.companyevents.common.error.exception.common.BadRequest;
+import ru.sberhack2025.companyevents.common.error.exception.common.Forbidden;
 import ru.sberhack2025.companyevents.common.error.exception.common.InternalServerError;
 import ru.sberhack2025.companyevents.common.error.exception.common.NotFound;
 import ru.sberhack2025.companyevents.common.error.exception.entity.EntityNotFoundException;
@@ -69,6 +70,13 @@ public class ErrorHandler implements LogFormatter {
     public ErrorResponse notFoundHandler(final NotFound e) {
         return handleError(HttpStatus.NOT_FOUND, e);
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse forbiddenHandler(final Forbidden e) {
+        return handleError(HttpStatus.FORBIDDEN, e);
+    }
+
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
