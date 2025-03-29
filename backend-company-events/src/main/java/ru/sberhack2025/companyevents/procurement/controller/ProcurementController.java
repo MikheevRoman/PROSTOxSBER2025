@@ -77,8 +77,8 @@ public class ProcurementController {
     }
 
     @Operation(
-            summary = "Удалить мероприятие по id",
-            description = "Ничего не возвращает, только код 204"
+            summary = "Удалить закупку по id",
+            description = "Возвращает все оставшиеся закупки мероприятия"
     )
     @DeleteMapping("events/{eventId}/procurements/{id}")
     public List<ProcurementView> deleteById(@PathVariable UUID eventId, @PathVariable UUID id) {
