@@ -13,6 +13,7 @@ import ru.sberhack2025.companyevents.procurement.model.Procurement;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Andrey Kurnosov
@@ -25,6 +26,9 @@ public interface ProcurementMapper extends DefaultMapper<Procurement, Procuremen
     @Mapping(target = "completionStatus", defaultExpression = "java(Procurement.CompletionStatus.IN_PROGRESS)")
     @Mapping(target = "fundraisingStatus", defaultExpression = "java(Procurement.FundraisingStatus.NONE)")
     Procurement fromDto(ProcurementCreateDto createDto);
+
+    @Mapping(target = "contributors", ignore = true)
+    ProcurementView toView(Procurement procurement);
 
     default List<ContributionView> toContributionView(List<Procurement> procurements, Integer participationsNumber) {
         return procurements.stream().map(p -> toContributionView(p, participationsNumber)).toList();

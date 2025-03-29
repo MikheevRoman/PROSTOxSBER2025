@@ -36,14 +36,14 @@ public class ProcurementView implements DateFormatter {
 
     @Schema(description = "Responsible participant id (uuid)", example = "faf063f0-50d9-4251-89dd-be1487f73b9c")
     @NotNull(message = "Field \"responsibleId\" cannot be null")
-    ParticipantView responsible;
+    UUID responsibleId;
 
     @Schema(description = "Completion status of procurement task")
     @NotNull(message = "Field \"completionStatus\" cannot be null")
     Procurement.CompletionStatus completionStatus;
 
     @Schema(description = "List of participants ids who will pay for this procurement")
-    List<ParticipantView> contributors;
+    List<UUID> contributors;
 
     @Schema(description = "Fundraising status of procurement task")
     @NotNull(message = "Field \"fundraisingStatus\" cannot be null")
