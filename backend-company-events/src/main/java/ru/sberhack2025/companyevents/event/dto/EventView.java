@@ -27,8 +27,8 @@ public class EventView implements DateFormatter {
     @Schema(description = "User's name", example = "Маша")
     String name;
 
-    @Schema(description = "Local date and time of event", example = "2025-07-14 16:30:00")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_TIME_PATTERN)
+    @Schema(description = "Local date and time of event", example = "2024-07-14T11:12:13Z")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = INSTANT_PATTERN)
     LocalDateTime date;
 
     @Schema(description = "Event's location description", example = "Пляж солнечный")
