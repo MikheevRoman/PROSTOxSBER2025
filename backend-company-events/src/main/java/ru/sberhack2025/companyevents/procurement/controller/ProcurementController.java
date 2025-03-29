@@ -52,14 +52,14 @@ public class ProcurementController {
 
 
     @Operation(summary = "Получить все закупки юзера, за которые он платит")
-    @GetMapping("participant/{participantId}/procurements/contributed")
+    @GetMapping("participants/{participantId}/procurements/contributed")
     public List<ContributionView> getAllByContributor(@PathVariable UUID participantId) {
         return procurementService.getAllByContributor(participantId);
     }
 
 
     @Operation(summary = "Получить все закупки юзера, за которые он ответственен")
-    @GetMapping("participant/{participantId}/procurements/responsible")
+    @GetMapping("participants/{participantId}/procurements/responsible")
     public List<ProcurementView> getAllByResponsible(@PathVariable UUID participantId) {
         return procurementService.getAllByResponsible(participantId);
     }
