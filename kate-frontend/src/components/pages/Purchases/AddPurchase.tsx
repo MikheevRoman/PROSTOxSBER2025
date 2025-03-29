@@ -109,19 +109,6 @@ const AddPurchase = () => {
           />
         </div>
 
-        {/*<div className="form-group">*/}
-        {/*  <label htmlFor="type">Тип</label>*/}
-        {/*  <select*/}
-        {/*    id="type"*/}
-        {/*    name="type"*/}
-        {/*    value={formData.type}*/}
-        {/*    onChange={handleChange}*/}
-        {/*  >*/}
-        {/*    <option value="product">Продукт</option>*/}
-        {/*    <option value="service">Услуга</option>*/}
-        {/*  </select>*/}
-        {/*</div>*/}
-
         <div className="form-group">
           <label htmlFor="cost">Стоимость (руб.)</label>
           <input

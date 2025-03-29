@@ -224,10 +224,6 @@ const PurchasesTab = ({ event, onAddPurchase }) => {
                       </span>
                     </div>
                     <div className="purchase-info">
-                      <span className="info-label">Тип:</span>
-                      <span className="info-value">{purchase.type === 'product' ? 'Продукт' : 'Услуга'}</span>
-                    </div>
-                    <div className="purchase-info">
                       <span className="info-label">Кто скидывается:</span>
                       <span className="info-value">{getContributorsText(purchase.contributors)}</span>
                     </div>
@@ -273,12 +269,6 @@ const PurchasesTab = ({ event, onAddPurchase }) => {
                       Ответственный{renderSortIndicator('responsible')}
                     </th>
                     <th 
-                      onClick={() => handleSort('type')} 
-                      className="sortable"
-                    >
-                      Тип{renderSortIndicator('type')}
-                    </th>
-                    <th 
                       onClick={() => handleSort('contributors')} 
                       className="sortable"
                     >
@@ -309,7 +299,6 @@ const PurchasesTab = ({ event, onAddPurchase }) => {
                       <td>
                         {purchase.responsible === 'currentUser' ? 'Вы' : (purchase.responsible || '—')}
                       </td>
-                      <td>{purchase.type === 'product' ? 'Продукт' : 'Услуга'}</td>
                       <td>
                         {getContributorsText(purchase.contributors)}
                       </td>
