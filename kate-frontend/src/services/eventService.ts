@@ -1,22 +1,23 @@
 import {v4} from "uuid";
 import axios from "axios";
+import {UUID} from "node:crypto";
+import EventEntity from "../model/EventEntity";
+import {ErrorResponse} from "react-router-dom";
 
 // Сервис для работы с данными о мероприятиях
 const EVENTS_KEY = 'kate_events';
 
 // Путь к API. Должен быть без завершающего "/".
-const API_BASE_URL = "https://prosto-sber-2025.gros.pro/api/company-events/test";
+const API_BASE_URL = "https://prosto-sber-2025.gros.pro/api/company-events";
 
-// Генерация уникального ID
-const generateId = () => {
-  return v4();
-};
+// Генерация уникального UUID
+const generateId = () => v4();
 
 /**
  * Получение всех мероприятий
  * @returns {Array} Массив объектов мероприятий
  */
-export async function getEvents() {
+export async function getEvents(): Promise<EventEntity[]> {
   return axios.get(API_BASE_URL).then(response => response.data);
 }
 
@@ -25,14 +26,14 @@ export async function getEvents() {
  * @returns {Array} Массив объектов мероприятий
  * @param eventId UUID мероприятия
  */
-export async function getEventById(eventId)  {
+export async function getEventById(eventId: UUID): Promise<EventEntity | null> {
   return axios.get(API_BASE_URL + "/" + eventId.toString()).then(response => response.data);
 }
 
 // Создание нового мероприятия
-export async function createEvent(eventData) {
+export async function createEvent(eventData: EventEntity): Promise<EventEntity | ErrorResponse> {
   const newEvent = {
-    name: eventData.title
+    name: eventData.name
   };
 
   return axios.post(API_BASE_URL, newEvent)
@@ -47,13 +48,13 @@ export async function createEvent(eventData) {
  * @returns {Array} Массив объектов мероприятий
  * @param eventId UUID мероприятия
  */
-export async function deleteEvent(eventId)  {
+export async function deleteEvent(eventId: UUID)  {
   return axios.delete(API_BASE_URL + "/" + eventId.toString()).then(response => response.data);
 }
 
 // Обновление мероприятия
-export const updateEvent = (eventId, eventData) => {
-  const events = getEvents();
+export const updateEvent = async (eventId: UUID, eventData: EventEntity) => {
+  const events = await getEvents();
   const updatedEvents = events.map(event => 
     event.id === eventId ? { ...event, ...eventData } : event
   );
@@ -63,8 +64,8 @@ export const updateEvent = (eventId, eventData) => {
 };
 
 // Добавление покупки
-export const addPurchase = (eventId, purchaseData) => {
-  const events = getEvents();
+export const addPurchase = async (eventId: UUID, purchaseData: any) => {
+  const events = await getEvents();
   const event = events.find(e => e.id === eventId);
   
   if (!event) return null;
@@ -89,8 +90,8 @@ export const addPurchase = (eventId, purchaseData) => {
 };
 
 // Обновление покупки
-export const updatePurchase = (eventId, purchaseId, purchaseData) => {
-  const events = getEvents();
+export const updatePurchase = async (eventId: UUID, purchaseId: any, purchaseData: any) => {
+  const events = await getEvents();
   const event = events.find(e => e.id === eventId);
   
   if (!event) return null;
@@ -113,8 +114,8 @@ export const updatePurchase = (eventId, purchaseId, purchaseData) => {
 };
 
 // Удаление покупки
-export const deletePurchase = (eventId, purchaseId) => {
-  const events = getEvents();
+export const deletePurchase = async (eventId: UUID, purchaseId: any) => {
+  const events = await getEvents();
   const event = events.find(e => e.id === eventId);
   
   if (!event) return false;
@@ -135,13 +136,13 @@ export const deletePurchase = (eventId, purchaseId) => {
 };
 
 // Получение приглашения для мероприятия
-export const getEventInviteLink = (eventId) => {
+export const getEventInviteLink = (eventId: UUID) => {
   return `${window.location.origin}/event/${eventId}`;
 };
 
 // Добавление участника в мероприятие
-export const addParticipant = (eventId, participantId) => {
-  const events = getEvents();
+export const addParticipant = async (eventId: UUID, participantId: UUID) => {
+  const events = await getEvents();
   const event = events.find(e => e.id === eventId);
   
   if (!event) return false;
@@ -163,8 +164,8 @@ export const addParticipant = (eventId, participantId) => {
 };
 
 // Удаление участника из мероприятия
-export const removeParticipant = (eventId, participantId) => {
-  const events = getEvents();
+export const removeParticipant = async (eventId: UUID, participantId: UUID) => {
+  const events = await getEvents();
   const event = events.find(e => e.id === eventId);
   
   if (!event) return false;
@@ -186,8 +187,8 @@ export const removeParticipant = (eventId, participantId) => {
 };
 
 // Назначение нового организатора
-export const assignNewOrganizer = (eventId, newOrganizerId) => {
-  const events = getEvents();
+export const assignNewOrganizer = async (eventId: UUID, newOrganizerId: UUID) => {
+  const events = await getEvents();
   const event = events.find(e => e.id === eventId);
   
   if (!event) return false;

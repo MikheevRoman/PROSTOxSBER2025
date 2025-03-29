@@ -3,40 +3,49 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../common/Header';
 import {deleteEvent, getEvents} from '../../../services/eventService';
 import './EventList.css';
+import {UUID} from "node:crypto";
+import EventEntity from "../../../model/EventEntity";
 
 const EventList = () => {
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<EventEntity[]>([]);
   const navigate = useNavigate();
 
   const loadEvents = async () => {
-    const eventsList = await getEvents();
-    setEvents(eventsList);
+    let eventsList: EventEntity[] = [];
+    try {
+      eventsList = await getEvents();
+      setEvents(eventsList);
+    }
+    catch (error) {
+      console.log(error);
+      return;
+    }
   };
 
   useEffect(() => {
     // Загрузка списка мероприятий
-    loadEvents();
+    loadEvents().catch((error) => console.log(error));
   }, []);
 
   const handleCreateEvent = () => {
     navigate('/create-event');
   };
 
-  const handleEventClick = (eventId) => {
+  const handleEventClick = (eventId: UUID) => {
     navigate(`/event/${eventId}`);
   };
 
-  const handleDeleteEvent = async (clickEvent, eventId) => {
+  const handleDeleteEvent = async (clickEvent: React.MouseEvent<HTMLButtonElement, MouseEvent>, eventId: UUID) => {
     clickEvent.stopPropagation();
     await deleteEvent(eventId);
     await loadEvents();
   }
 
-  const renderEventStatus = (event) => {
+  const renderEventStatus = (event: EventEntity) => {
     return event.isOrganizer ? 'Организатор' : 'Участник';
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     if (!dateString) return 'Дата не указана';
     
     const date = new Date(dateString);
@@ -68,7 +77,7 @@ const EventList = () => {
               Создать мероприятие
             </button>
           </div>
-        ) : (
+        ) : ( events &&
           events.map(event => (
             <div 
               key={event.id} 
@@ -77,14 +86,14 @@ const EventList = () => {
             >
               <h2 className="event-title">{event.name}</h2>
               <div className="event-details">
-                <p className="event-date">
-                  <span className="event-label">Дата:</span> {formatDate(event.date)}
-                </p>
-                {event.location && (
-                  <p className="event-location">
-                    <span className="event-label">Место:</span> {event.location}
-                  </p>
-                )}
+                {/*<p className="event-date">*/}
+                {/*  <span className="event-label">Дата:</span> {formatDate(event.date)}*/}
+                {/*</p>*/}
+                {/*{event.location && (*/}
+                {/*  <p className="event-location">*/}
+                {/*    <span className="event-label">Место:</span> {event.location}*/}
+                {/*  </p>*/}
+                {/*)}*/}
                 <div className="event-status">
                   <span className={`status-badge ${event.isOrganizer ? 'organizer' : 'participant'}`}>
                     {renderEventStatus(event)}

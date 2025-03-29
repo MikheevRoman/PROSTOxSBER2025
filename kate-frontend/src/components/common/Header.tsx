@@ -2,7 +2,13 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Header.css';
 
-const Header = ({ title, showBackButton = false, actionButton = null }) => {
+interface HeaderProps {
+    title: string;
+    showBackButton?: boolean;
+    actionButton?: React.ReactNode;
+}
+
+const Header = (props: HeaderProps) => {
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -12,16 +18,16 @@ const Header = ({ title, showBackButton = false, actionButton = null }) => {
   return (
     <header className="header">
       <div className="header-left">
-        {showBackButton && (
+        {props.showBackButton && (
           <button className="back-button" onClick={handleBack}>
             ←
           </button>
         )}
-        <h1 className="header-title">{title}</h1>
+        <h1 className="header-title">{props.title}</h1>
       </div>
-      {actionButton && (
+      {props.actionButton && (
         <div className="header-right">
-          {actionButton}
+          {props.actionButton}
         </div>
       )}
     </header>

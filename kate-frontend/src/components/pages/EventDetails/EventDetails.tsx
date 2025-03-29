@@ -9,13 +9,15 @@ import MyTasksTab from './Tabs/MyTasksTab';
 import ParticipantsTab from './Tabs/ParticipantsTab';
 import SummaryTab from './Tabs/SummaryTab';
 import './EventDetails.css';
+import {UUID} from "node:crypto";
+import EventEntity from "../../../model/EventEntity";
 
 const EventDetails = () => {
-  const { eventId } = useParams();
+  const eventId = useParams() as unknown as UUID;
   const navigate = useNavigate();
-  const [event, setEvent] = useState(null);
+  const [event, setEvent] = useState<EventEntity | null>(null);
   const [activeTab, setActiveTab] = useState('purchases');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const loadEvent = async () => {
@@ -40,7 +42,7 @@ const EventDetails = () => {
     navigate(`/event/${eventId}/add-purchase`);
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     if (!dateString) return 'Дата не указана';
     
     const date = new Date(dateString);
@@ -112,24 +114,24 @@ const EventDetails = () => {
 
       <div className="event-summary">
         <div className="event-info">
-          <p className="event-date">
-            <span className="event-label">Дата:</span> {formatDate(event.date)}
-          </p>
-          {event.location && (
-            <p className="event-location">
-              <span className="event-label">Место:</span> {event.location}
-            </p>
-          )}
-          {event.budget && (
-            <p className="event-budget">
-              <span className="event-label">Бюджет:</span> {event.budget} руб.
-            </p>
-          )}
-          {event.note && (
-            <p className="event-note">
-              <span className="event-label">Примечание:</span> {event.note}
-            </p>
-          )}
+          {/*<p className="event-date">*/}
+          {/*  <span className="event-label">Дата:</span> {formatDate(event.date)}*/}
+          {/*</p>*/}
+          {/*{event.location && (*/}
+          {/*  <p className="event-location">*/}
+          {/*    <span className="event-label">Место:</span> {event.location}*/}
+          {/*  </p>*/}
+          {/*)}*/}
+          {/*{event.budget && (*/}
+          {/*  <p className="event-budget">*/}
+          {/*    <span className="event-label">Бюджет:</span> {event.budget} руб.*/}
+          {/*  </p>*/}
+          {/*)}*/}
+          {/*{event.note && (*/}
+          {/*  <p className="event-note">*/}
+          {/*    <span className="event-label">Примечание:</span> {event.note}*/}
+          {/*  </p>*/}
+          {/*)}*/}
           <p className="event-status">
             <span className={`status-badge ${event.isOrganizer ? 'organizer' : 'participant'}`}>
               {event.isOrganizer ? 'Организатор' : 'Участник'}
