@@ -33,6 +33,10 @@ const ParticipantsTab = (props: ParticipantItemProps) => {
     loadParticipants();
   }, [loadParticipants]);
 
+  function isCurrentUserOrganizer(): boolean {
+    return event.organizerTgUserId === user.id;
+  }
+
   const handleRemoveParticipant = async (participantId) => {
     if (window.confirm('Вы уверены, что хотите удалить этого участника?')) {
       const success = await removeParticipant(user.id, eventId, participantId);
@@ -66,17 +70,6 @@ const ParticipantsTab = (props: ParticipantItemProps) => {
       });
   };
 
-  // В реальном приложении здесь было бы отображение имен участников
-  // Для демо используем идентификаторы
-  const getParticipantName = (participantId) => {
-    if (participantId === 'currentUser') {
-      return 'Вы';
-    }
-    return `Участник ${participantId.substring(0, 5)}`;
-  };
-
-  const isOrganizer = event.organizerTgUserId === user.id;
-
   return (
     <div className="tab-container">
       <div className="tab-header">
@@ -89,23 +82,22 @@ const ParticipantsTab = (props: ParticipantItemProps) => {
             <tr>
               <th>Участник</th>
               <th>Роль</th>
-              {isOrganizer && <th>Действия</th>}
+              {isCurrentUserOrganizer() && <th>Действия</th>}
             </tr>
           </thead>
           <tbody>
             {participants.map((participant, index) => {
-              const isCurrentOrganizer = (participant.id === event.organizerTgUserId);
               return (
                 <tr key={participant.id}>
-                  <td className="participant-name">
+                  <td className="participant-name participants-table-cell">
                     <div>{index + 1}. {participant.name}</div>
                   </td>
-                  <td>{isCurrentOrganizer ? 'Организатор' : 'Участник'}</td>
-                  {isOrganizer && (
-                    <td className="actions-cell">
-                      {participant.id !== user.id && (
+                  <td>{isCurrentUserOrganizer() ? 'Организатор' : 'Участник'}</td>
+                  {isCurrentUserOrganizer() && (
+                    <td className="actions-cell participants-table-cell">
+                      {participant.tgUserId !== user.id && (
                         <>
-                          {!isCurrentOrganizer && (
+                          {!isCurrentUserOrganizer() && (
                             <button 
                               className="action-button"
                               onClick={() => handleAssignOrganizer(participant.id)}

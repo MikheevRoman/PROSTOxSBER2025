@@ -1,5 +1,5 @@
 interface Participant {
-    id: number;
+    id: string;
     name?: string;
     tgUserId?: number;
     createdAt?: string;
