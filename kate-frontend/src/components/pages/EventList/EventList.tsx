@@ -34,7 +34,7 @@ const EventList = () => {
     if (user) {
       loadEvents().catch((error) => console.log(error));
     }
-  }, []);
+  }, [user]);
 
   const handleCreateEvent = () => {
     navigate('/create-event');

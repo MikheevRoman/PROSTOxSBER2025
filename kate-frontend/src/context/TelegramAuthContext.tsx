@@ -1,22 +1,16 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import TelegramUser from '../model/TelegramUser';
+import { useTelegram } from "../hooks/useTelegram";
 
-/**
- * Интерфейс контекста аутентификации Telegram
- * @interface TelegramAuthContextType
- * @property {TelegramUser | null} user - Данные пользователя или null если не авторизован
- */
 interface TelegramAuthContextType {
     user: TelegramUser | null;
+    tg: {
+        ready: () => void;
+        expand: () => void;
+    } | null;
 }
 
-/**
- * Создаем контекст для хранения данных аутентификации Telegram
- * @constant TelegramAuthContext
- * @type {React.Context<TelegramAuthContextType>}
- * @default { user: null } - Начальное значение контекста
- */
-const TelegramAuthContext = createContext<TelegramAuthContextType>({ user: null });
+const TelegramAuthContext = createContext<TelegramAuthContextType>({ user: null, tg: null });
 
 /**
  * Провайдер контекста аутентификации Telegram
@@ -33,17 +27,22 @@ const TelegramAuthContext = createContext<TelegramAuthContextType>({ user: null 
  */
 export const TelegramAuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     // Состояние для хранения данных пользователя
+    const { tg } = useTelegram();
     const [user, setUser] = useState<TelegramUser | null>(null);
 
     useEffect(() => {
-        // Получаем объект Telegram WebApp из глобальной области видимости
-        const tg = window.Telegram?.WebApp;
+        // Для разработки - можно установить мок через localStorage
+        if (process.env.NODE_ENV === 'development') {
+            const mockUser = localStorage.getItem('debug:telegram_user');
+            if (mockUser) {
+                setUser(JSON.parse(mockUser));
+                return;
+            }
+        }
 
-        // Если есть данные пользователя в initDataUnsafe
         if (tg?.initDataUnsafe?.user) {
+            console.log("tg updated:", tg);
             const userData = tg.initDataUnsafe.user;
-
-            // Устанавливаем данные пользователя в состояние
             setUser({
                 id: userData.id,
                 first_name: userData.first_name,
@@ -54,11 +53,11 @@ export const TelegramAuthProvider: React.FC<{ children: ReactNode }> = ({ childr
                 hash: tg.initDataUnsafe.hash
             });
         }
-    }, []); // Пустой массив зависимостей - эффект выполняется только при монтировании
+    }, [tg]);
 
     return (
         // Предоставляем значение контекста дочерним компонентам
-        <TelegramAuthContext.Provider value={{ user }}>
+        <TelegramAuthContext.Provider value={{ user, tg }}>
             {children}
         </TelegramAuthContext.Provider>
     );
