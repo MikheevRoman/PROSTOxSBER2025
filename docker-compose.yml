@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: company-event
+    ports:
+      - "5431:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - company-events-network
+
+  backend-company-events:
+    build:
+      context: ./backend-company-events
+      dockerfile: Dockerfile
+    container_name: backend-company-events
+    ports:
+      - "8080:8080"
+    environment:
+      POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/company-event
+      POSTGRES_DB_USER: postgres
+      POSTGRES_DB_PASSWORD: root
+      SHOW_SQL: true
+      TELEGRAM_BOT_API_ADDRESS: http://company-events-telegram-bot:8081
+    depends_on:
+      - postgres
+    networks:
+      - company-events-network
+
+  company-events-telegram-bot:
+    build:
+      context: ./company-events-telegram-bot
+      dockerfile: Dockerfile
+    container_name: company-events-telegram-bot
+    ports:
+      - "8081:8081"
+    environment:
+      BOT_TOKEN: # ТОКЕН ВАШЕГО БОТА ЗДЕСЬ
+    depends_on:
+      - backend-company-events
+    networks:
+      - company-events-network
+
+volumes:
+  postgres_data:
+
+networks:
+  company-events-network:
+    driver: bridge
