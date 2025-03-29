@@ -2,7 +2,7 @@ import {v4} from "uuid";
 import axios from "axios";
 import {UUID} from "node:crypto";
 import EventEntity from "../model/EventEntity";
-import {ErrorResponse} from "react-router-dom";
+import ApiErrorResponse from "../model/ApiErrorResponse";
 
 // Сервис для работы с данными о мероприятиях
 const EVENTS_KEY = 'kate_events';
@@ -31,7 +31,7 @@ export async function getEventById(eventId: UUID): Promise<EventEntity | null> {
 }
 
 // Создание нового мероприятия
-export async function createEvent(eventData: EventEntity): Promise<EventEntity | ErrorResponse> {
+export async function createEvent(eventData: EventEntity): Promise<EventEntity | ApiErrorResponse> {
   const newEvent = {
     name: eventData.name
   };
@@ -136,7 +136,7 @@ export const deletePurchase = async (eventId: UUID, purchaseId: any) => {
 };
 
 // Получение приглашения для мероприятия
-export const getEventInviteLink = (eventId: UUID) => {
+export const getEventInviteLink = (eventId: UUID): string => {
   return `${window.location.origin}/event/${eventId}`;
 };
 

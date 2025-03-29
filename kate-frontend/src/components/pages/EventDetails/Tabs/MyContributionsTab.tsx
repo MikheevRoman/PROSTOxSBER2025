@@ -56,7 +56,7 @@ const MyContributionsTab = ({ event }) => {
             </tbody>
             <tfoot>
               <tr>
-                <td className="total-row" colSpan="2">
+                <td className="total-row" colSpan={2}>
                   <strong>Итого:</strong> {totalAmount} руб.
                 </td>
               </tr>
