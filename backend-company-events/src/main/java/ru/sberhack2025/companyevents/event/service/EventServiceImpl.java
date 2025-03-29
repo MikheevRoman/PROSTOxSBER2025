@@ -38,6 +38,14 @@ public class EventServiceImpl extends DefaultServiceImpl<Event, EventCreateDto, 
 
     @Override
     @Transactional
+    public List<EventView> getByTgUserId(Long tgUserId) {
+        User user = userRepository.find(tgUserId);
+        List<Event> events = repository.findEventsByTgUserId(user.getTgUserId());
+        return events.stream().map(e -> enrichView(e, mapper.toView(e))).toList();
+    }
+
+    @Override
+    @Transactional
     protected Event toEntity(EventCreateDto createDto) {
         User user = userRepository.find(createDto.getTgUserId());
         Participant participant = Participant.builder().isOrganizer(true).build();
@@ -48,14 +56,6 @@ public class EventServiceImpl extends DefaultServiceImpl<Event, EventCreateDto, 
         event.setOrganizer(participant);
 
         return event;
-    }
-
-    @Override
-    @Transactional
-    public List<EventView> getByTgUserId(Long tgUserId) {
-        User user = userRepository.find(tgUserId);
-        List<Event> events = repository.findEventsByTgUserId(user.getTgUserId());
-        return events.stream().map(e -> enrichView(e, mapper.toView(e))).toList();
     }
 
     @Override

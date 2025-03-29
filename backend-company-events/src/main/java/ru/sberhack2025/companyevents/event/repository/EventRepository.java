@@ -2,10 +2,8 @@ package ru.sberhack2025.companyevents.event.repository;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import ru.sberhack2025.companyevents.common.error.exception.entity.EntityNotFoundException;
 import ru.sberhack2025.companyevents.core.repository.DefaultRepository;
 import ru.sberhack2025.companyevents.event.model.Event;
-import ru.sberhack2025.companyevents.user.model.User;
 
 import java.util.List;
 

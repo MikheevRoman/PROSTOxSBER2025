@@ -1,5 +1,6 @@
 package ru.sberhack2025.companyevents.event.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jdk.jfr.Unsigned;
 import lombok.*;
@@ -31,6 +32,7 @@ public class Event extends BaseEntity {
     @Column(nullable = false)
     String name;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "organizer_id")
     private Participant organizer;
