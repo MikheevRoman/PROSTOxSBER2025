@@ -3,21 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../common/Header';
 import { createEvent, getEventInviteLink } from '../../../services/eventService';
 import './CreateEvent.css';
+import EventFormData from "../../../model/EventFormData";
+import EventEntity from "../../../model/EventEntity";
+import ApiErrorResponse from '../../../model/ApiErrorResponse';
+import {v4} from "uuid";
+import {UUID} from "node:crypto";
 
 const CreateEvent = () => {
-  const [formData, setFormData] = useState({
-    title: '',
-    date: '',
-    time: '',
-    location: '',
-    budget: '',
-    note: ''
-  });
+  const [formData, setFormData] = useState<EventFormData>();
   const [eventCreated, setEventCreated] = useState(false);
-  const [createdEvent, setCreatedEvent] = useState(null);
+  const [createdEvent, setCreatedEvent] = useState<EventEntity | null>(null);
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prevData => ({
       ...prevData,
@@ -25,28 +23,40 @@ const CreateEvent = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Объединение даты и времени, если они указаны
-    let eventDate = null;
-    if (formData.date) {
-      if (formData.time) {
-        eventDate = `${formData.date}T${formData.time}`;
-      } else {
-        eventDate = formData.date;
-      }
+
+    const eventFromForm: EventEntity = {
+      createdAt: Date.prototype,
+      eventRefCode: "",
+      isOrganizer: false,
+      organizer: v4() as UUID, // TODO: REPLACE WITH TG ID
+      organizerCardInfo: "",
+      organizerTgUserId: 0,
+      participants: [],
+      purchases: [],
+      id: v4() as UUID,
+      name: formData?.name || "",
+      date: formData?.date ? Date.parse(formData?.date) as unknown as Date : Date.prototype,
+      place: formData?.place || "",
+      budget: formData?.budget || 0,
+      comment: formData?.comment
     }
-    
-    const eventData = {
-      title: formData.title,
-      date: eventDate,
-      location: formData.location || null,
-      budget: formData.budget ? parseFloat(formData.budget) : null,
-      note: formData.note || null,
-    };
-    
-    const newEvent = await createEvent(eventData);
+
+    // const eventData = {
+    //   title: formData.title,
+    //   date: eventDate,
+    //   location: formData.location || null,
+    //   budget: formData.budget ? parseFloat(formData.budget) : null,
+    //   note: formData.note || null,
+    // };
+    //
+    const newEvent: EventEntity | ApiErrorResponse = await createEvent(eventFromForm);
+
+    if (!newEvent || newEvent instanceof ApiErrorResponse) {
+      return;
+    }
+
     setCreatedEvent(newEvent);
     setEventCreated(true);
   };
@@ -56,6 +66,9 @@ const CreateEvent = () => {
   };
 
   const copyInviteLink = () => {
+    if (!createdEvent) {
+      return;
+    }
     const link = getEventInviteLink(createdEvent.id);
     navigator.clipboard.writeText(link)
       .then(() => {
@@ -82,7 +95,7 @@ const CreateEvent = () => {
               <p>Пригласите участников по ссылке:</p>
               <div className="invite-link-action">
                 <span className="invite-link-text">
-                  {getEventInviteLink(createdEvent.id)}
+                  {createdEvent && getEventInviteLink(createdEvent.id)}
                 </span>
                 <button className="button secondary" onClick={copyInviteLink}>
                   Копировать
@@ -102,7 +115,7 @@ const CreateEvent = () => {
               type="text"
               id="title"
               name="title"
-              value={formData.title}
+              value={formData?.name}
               onChange={handleChange}
               required
               placeholder="Введите название мероприятия"
@@ -110,26 +123,26 @@ const CreateEvent = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="date">Дата</label>
+            <label htmlFor="date">Дата и время</label>
             <input
-              type="date"
+              type="datetime-local"
               id="date"
               name="date"
-              value={formData.date}
+              value={formData?.date}
               onChange={handleChange}
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="time">Время</label>
-            <input
-              type="time"
-              id="time"
-              name="time"
-              value={formData.time}
-              onChange={handleChange}
-            />
-          </div>
+          {/*<div className="form-group">*/}
+          {/*  <label htmlFor="time">Время</label>*/}
+          {/*  <input*/}
+          {/*    type="time"*/}
+          {/*    id="time"*/}
+          {/*    name="time"*/}
+          {/*    value={formData.time}*/}
+          {/*    onChange={handleChange}*/}
+          {/*  />*/}
+          {/*</div>*/}
 
           <div className="form-group">
             <label htmlFor="location">Место</label>
@@ -137,7 +150,7 @@ const CreateEvent = () => {
               type="text"
               id="location"
               name="location"
-              value={formData.location}
+              value={formData?.place}
               onChange={handleChange}
               placeholder="Укажите место проведения"
             />
@@ -149,7 +162,7 @@ const CreateEvent = () => {
               type="number"
               id="budget"
               name="budget"
-              value={formData.budget}
+              value={formData?.budget}
               onChange={handleChange}
               placeholder="Укажите бюджет мероприятия"
               min="0"
@@ -161,10 +174,10 @@ const CreateEvent = () => {
             <textarea
               id="note"
               name="note"
-              value={formData.note}
+              value={formData?.comment}
               onChange={handleChange}
               placeholder="Дополнительная информация"
-              rows="3"
+              rows={3}
             ></textarea>
           </div>
 

@@ -40,7 +40,7 @@ const SummaryTab = ({ event }) => {
     const allParticipants = [...event.participants];
     
     // Расчет общих затрат
-    const totalExpenses = event.purchases.reduce((sum, purchase) => {
+    const totalExpenses = event.purchases.reduce((sum: number, purchase) => {
       return sum + (purchase.cost ? parseFloat(purchase.cost) : 0);
     }, 0);
     

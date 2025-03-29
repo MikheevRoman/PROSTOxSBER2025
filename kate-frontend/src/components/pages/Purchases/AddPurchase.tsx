@@ -205,7 +205,7 @@ const AddPurchase = () => {
             value={formData.note}
             onChange={handleChange}
             placeholder="Дополнительная информация"
-            rows="3"
+            rows={3}
           ></textarea>
         </div>
 
