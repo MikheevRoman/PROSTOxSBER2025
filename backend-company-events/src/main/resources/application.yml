@@ -13,6 +13,9 @@ spring:
       ddl-auto: validate
     show-sql: ${SHOW_SQL}
     open-in-view: true
+  liquibase:
+    change-log: classpath:db/company-events-changelog.xml
+
 
 server:
   port: 3005

@@ -1,0 +1,139 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.10.xsd">
+
+    <changeSet id="01-create-scheme" author="akurnosov">
+
+        <!-- user -->
+        <createTable tableName="user">
+            <column name="id" type="${EntityId}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tg_user_id" type="${Long}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="${String}(255)"/>
+            <column name="created_at" type="${Instant}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_user_tg_user_id" tableName="user">
+            <column name="tg_user_id"/>
+        </createIndex>
+
+        <!-- participant -->
+        <createTable tableName="participant">
+            <column name="id" type="${EntityId}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="event_id" type="${EntityId}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="${EntityId}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_organizer" type="${Boolean}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="has_payment" type="${Boolean}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="${Instant}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="participant" baseColumnNames="user_id"
+                                 referencedTableName="user" referencedColumnNames="id"
+                                 constraintName="fk_participant_user"/>
+
+        <!-- event -->
+        <createTable tableName="event">
+            <column name="id" type="${EntityId}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="${String}(255)">
+                <constraints nullable="false"/>
+            </column>
+            <!-- organizer_id ссылается на Participant -->
+            <column name="organizer_id" type="${EntityId}"/>
+            <column name="date" type="${LocalDateTime}"/>
+            <column name="place" type="${String}(255)"/>
+            <column name="comment" type="${StringMax}"/>
+            <!-- budget с точностью 10,2 -->
+            <column name="budget" type="DECIMAL(10,2)"/>
+            <column name="organizer_card_info" type="${String}(300)"/>
+            <column name="created_at" type="${Instant}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="event" baseColumnNames="organizer_id"
+                                 referencedTableName="participant" referencedColumnNames="id"
+                                 constraintName="fk_event_organizer"/>
+        <addForeignKeyConstraint baseTableName="participant" baseColumnNames="event_id"
+                                 referencedTableName="event" referencedColumnNames="id"
+                                 constraintName="fk_participant_event"/>
+
+        <!-- procurement -->
+        <createTable tableName="procurement">
+            <column name="id" type="${EntityId}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="event_id" type="${EntityId}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="${String}(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="${BigDecimal}(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="comment" type="${StringMax}"/>
+            <column name="responsible_id" type="${EntityId}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="completion_status" type="${Enum}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fundraising_status" type="${Enum}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="${Instant}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="procurement" baseColumnNames="event_id"
+                                 referencedTableName="event" referencedColumnNames="id"
+                                 constraintName="fk_procurement_event"/>
+        <addForeignKeyConstraint baseTableName="procurement" baseColumnNames="responsible_id"
+                                 referencedTableName="participant" referencedColumnNames="id"
+                                 constraintName="fk_procurement_responsible"/>
+
+        <!-- procurement_contributors -->
+        <createTable tableName="procurement_contributors">
+            <column name="procurement_id" type="${EntityId}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="participant_id" type="${EntityId}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="procurement_contributors"
+                       columnNames="procurement_id, participant_id"
+                       constraintName="pk_procurement_contributors"/>
+
+        <addForeignKeyConstraint baseTableName="procurement_contributors" baseColumnNames="procurement_id"
+                                 referencedTableName="procurement" referencedColumnNames="id"
+                                 constraintName="fk_pc_procurement"/>
+        <addForeignKeyConstraint baseTableName="procurement_contributors" baseColumnNames="participant_id"
+                                 referencedTableName="participant" referencedColumnNames="id"
+                                 constraintName="fk_pc_participant"/>
+
+    </changeSet>
+
+</databaseChangeLog>
