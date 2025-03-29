@@ -1,4 +1,4 @@
-package ru.sberhack2025.telegrambot.services;
+package ru.sberhack2025.telegrambot.services.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;

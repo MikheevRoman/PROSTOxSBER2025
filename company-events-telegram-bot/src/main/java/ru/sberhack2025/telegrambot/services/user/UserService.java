@@ -1,4 +1,4 @@
-package ru.sberhack2025.telegrambot.services;
+package ru.sberhack2025.telegrambot.services.user;
 
 public interface UserService {
 

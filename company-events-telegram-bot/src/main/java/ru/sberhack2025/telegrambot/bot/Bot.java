@@ -15,8 +15,11 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import ru.sberhack2025.telegrambot.exception.NotificationException;
-import ru.sberhack2025.telegrambot.services.UserService;
+import ru.sberhack2025.telegrambot.services.participants.ParticipantService;
+import ru.sberhack2025.telegrambot.services.user.UserService;
 import ru.sberhack2025.telegrambot.supplier.BotMessageSupplier;
+
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -30,17 +33,21 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer, SpringLongPol
 
     private final UserService userService;
 
+    private final ParticipantService participantService;
+
     @Autowired
     public Bot(
             @Qualifier("botToken") String botToken,
             TelegramClient telegramClient,
             BotMessageSupplier botMessageSupplier,
-            UserService userService
+            UserService userService,
+            ParticipantService participantService
     ) {
         this.botToken = botToken;
         this.botMessageSupplier = botMessageSupplier;
         this.telegramClient = telegramClient;
         this.userService = userService;
+        this.participantService = participantService;
     }
 
     @Override
@@ -63,8 +70,14 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer, SpringLongPol
             User user = update.getMessage().getFrom();
             String messageText = update.getMessage().getText();
 
-            if (messageText.equals(Command.START.COMMAND_TEXT)) {
-                userService.createUser(chatId, user.getFirstName() + " " + user.getLastName());
+            if (isStartCommand(messageText)) {
+                String name = getFullName(user);
+                try {
+                    String refLink = messageText.split(" ")[1];
+                    participantService.createParticipant(chatId, name, refLink);
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    userService.createUser(chatId, name);
+                }
                 sendMessage(botMessageSupplier.getWelcomeMessage(chatId));
             } else if (messageText.equals(Command.GET_DEBT_LIST.COMMAND_TEXT)) {
                 //TODO
@@ -72,6 +85,14 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer, SpringLongPol
                 //TODO
             }
         }
+    }
+
+    private String getFullName(User user) {
+        return user.getFirstName() + Optional.ofNullable(user.getLastName()).map(s -> " " + s).orElse("");
+    }
+
+    private boolean isStartCommand(String command) {
+        return command.split(" ")[0].equals(Command.START.COMMAND_TEXT);
     }
 
     public void sendMessage(SendMessage sendMessage) {
