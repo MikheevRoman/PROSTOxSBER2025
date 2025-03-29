@@ -2,6 +2,7 @@ package ru.sberhack2025.companyevents.participant.repository;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import ru.sberhack2025.companyevents.common.error.exception.entity.EntityNotFoundException;
 import ru.sberhack2025.companyevents.core.repository.DefaultRepository;
 import ru.sberhack2025.companyevents.event.model.Event;
 import ru.sberhack2025.companyevents.participant.model.Participant;
@@ -29,4 +30,11 @@ public interface ParticipantRepository extends DefaultRepository<Participant> {
     default Boolean checkIfExists(User user, Event event) {
         return findByUserAndEvent(user, event).isPresent();
     }
+
+    default Participant find(User user, Event event) {
+        return findByUserAndEvent(user, event)
+                .orElseThrow(() -> new EntityNotFoundException(getEntityClass(), user.getTgUserId()));
+    }
+
+
 }

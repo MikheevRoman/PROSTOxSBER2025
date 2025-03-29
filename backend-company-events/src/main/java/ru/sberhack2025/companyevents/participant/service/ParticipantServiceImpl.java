@@ -73,6 +73,15 @@ public class ParticipantServiceImpl implements ParticipantService {
         return toView(participants);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public ParticipantView findByUserAndEvent(Long tgUserId, UUID eventId) {
+        User user = userRepository.find(tgUserId);
+        Event event = eventRepository.find(eventId);
+        Participant participant = repository.find(user, event);
+        return toView(participant);
+    }
+
 
     public ParticipantView toView(Participant participant) {
         ParticipantView view = mapper.toView(participant);
