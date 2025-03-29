@@ -16,6 +16,7 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProcurementUpdateDto {
 
+
     @Schema(hidden = true)
     UUID eventId;
 
