@@ -60,7 +60,7 @@ public class UserController {
 
     @Operation(
             summary = "Обновить юзера по tgUserId",
-            description = "Возвращает обновленный юзера"
+            description = "Возвращает обновленного юзера"
     )
     @PatchMapping("users/{id}")
     public UserView update(@PathVariable Long id, @Validated @RequestBody final UserUpdateDto updateDto) {

@@ -1,5 +1,6 @@
 package ru.sberhack2025.companyevents.procurement.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jdk.jfr.Unsigned;
 import lombok.*;
@@ -20,13 +21,14 @@ import java.util.List;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "procurement")
 @ToString(exclude = {"event", "responsible", "contributors"})
+@EqualsAndHashCode(callSuper = true, exclude = {"event", "responsible", "contributors"})
 public class Procurement extends BaseEntity {
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "event_id", nullable = false)
     Event event;
@@ -41,6 +43,7 @@ public class Procurement extends BaseEntity {
     @Column
     String comment;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "responsible_id", nullable = false)
     Participant responsible;
@@ -64,10 +67,9 @@ public class Procurement extends BaseEntity {
     @Column(nullable = false)
     private FundraisingStatus fundraisingStatus = FundraisingStatus.NONE;
 
-
     public enum CompletionStatus {
         IN_PROGRESS,
-        DONE;
+        DONE
     }
 
     public enum FundraisingStatus {
@@ -87,3 +89,5 @@ public class Procurement extends BaseEntity {
     }
 
 }
+
+

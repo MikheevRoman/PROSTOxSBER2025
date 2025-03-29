@@ -1,5 +1,6 @@
 package ru.sberhack2025.companyevents.participant.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -19,17 +20,19 @@ import java.util.List;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "participant")
 @ToString(exclude = {"event", "user", "responsibleProcurements", "contributedProcurements"})
+@EqualsAndHashCode(callSuper = true, exclude = {"event", "user", "responsibleProcurements", "contributedProcurements"})
 public class Participant extends BaseEntity {
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "event_id", nullable = false)
     Event event;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     User user;

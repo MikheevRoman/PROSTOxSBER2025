@@ -45,8 +45,9 @@ public class ParticipantServiceImpl implements ParticipantService {
                 .tgUserId(createDto.getTgUserId())
                 .name(createDto.getName())
                 .build();
-        userService.create(userCreateDto);
+
         try {
+            userService.create(userCreateDto);
             entityManager.flush();
         } catch (NotUniqueException ignored) {
         }
@@ -69,16 +70,20 @@ public class ParticipantServiceImpl implements ParticipantService {
     public List<ParticipantView> getAllByEvent(UUID eventId) {
         Event event = eventRepository.find(eventId);
         List<Participant> participants = repository.findByEventIdWithUser(event.getId());
-        return participants.stream().map(this::toView).toList();
+        return toView(participants);
     }
 
 
-    private ParticipantView toView(Participant participant) {
+    public ParticipantView toView(Participant participant) {
         ParticipantView view = mapper.toView(participant);
         User user = participant.getUser();
         view.setName(user.getName());
         view.setTgUserId(user.getTgUserId());
         return view;
+    }
+
+    public List<ParticipantView> toView(List<Participant> participants) {
+        return participants.stream().map(this::toView).toList();
     }
 
     private void checkIfExistsOrThrow(User user, Event event) {

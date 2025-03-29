@@ -3,6 +3,7 @@ package ru.sberhack2025.companyevents.user.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.sberhack2025.companyevents.core.service.DefaultServiceImpl;
 import ru.sberhack2025.companyevents.user.dto.UserCreateDto;
@@ -23,12 +24,16 @@ public class UserServiceImpl extends DefaultServiceImpl<User, UserCreateDto, Use
         super(userRepository, userMapper);
     }
 
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public UserView create(UserCreateDto createDto) {
+        return super.create(createDto);
+    }
+
     @Transactional
     public UserView updateByTgUserId(Long tgUserId, UserUpdateDto updateDto) {
         User user = repository.find(tgUserId);
-        return mapper.toView(
-                mapper.update(updateDto, user)
-        );
+        return mapper.toView(mapper.update(updateDto, user));
     }
 
     @Transactional
