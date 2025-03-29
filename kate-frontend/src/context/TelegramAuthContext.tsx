@@ -36,23 +36,37 @@ export const TelegramAuthProvider: React.FC<{ children: ReactNode }> = ({ childr
     const [user, setUser] = useState<TelegramUser | null>(null);
 
     useEffect(() => {
-        // Получаем объект Telegram WebApp из глобальной области видимости
-        const tg = window.Telegram?.WebApp;
+        if (
+            process.env.REACT_APP_ENV === 'development' &&
+            process.env.REACT_APP_ENABLE_TELEGRAM_MOCK === 'true'
+        ) {
+            const mockUser = {
+                id: 123456789,
+                first_name: 'Dev',
+                last_name: 'User',
+                username: 'dev_user',
+                photo_url: 'https://example.com/avatar.jpg'
+            };
+            setUser(mockUser);
+        }else {
+            // Получаем объект Telegram WebApp из глобальной области видимости
+            const tg = window.Telegram?.WebApp;
 
-        // Если есть данные пользователя в initDataUnsafe
-        if (tg?.initDataUnsafe?.user) {
-            const userData = tg.initDataUnsafe.user;
+            // Если есть данные пользователя в initDataUnsafe
+            if (tg?.initDataUnsafe?.user) {
+                const userData = tg.initDataUnsafe.user;
 
-            // Устанавливаем данные пользователя в состояние
-            setUser({
-                id: userData.id,
-                first_name: userData.first_name,
-                last_name: userData.last_name,
-                username: userData.username,
-                photo_url: userData.photo_url,
-                auth_date: tg.initDataUnsafe.auth_date,
-                hash: tg.initDataUnsafe.hash
-            });
+                // Устанавливаем данные пользователя в состояние
+                setUser({
+                    id: userData.id,
+                    first_name: userData.first_name,
+                    last_name: userData.last_name,
+                    username: userData.username,
+                    photo_url: userData.photo_url,
+                    auth_date: tg.initDataUnsafe.auth_date,
+                    hash: tg.initDataUnsafe.hash
+                });
+            }
         }
     }, []); // Пустой массив зависимостей - эффект выполняется только при монтировании
 

@@ -34,7 +34,7 @@ export async function getEvents(userId: number): Promise<EventEntity[]> {
  * @returns {Promise<EventEntity | null>} Объект мероприятия или null
  */
 export async function getEventById(userId: number, eventId: UUID): Promise<EventEntity | null> {
-  return axios.get(`${API_BASE_URL}/users/${userId}/events/${eventId}`)
+  return axios.get(`${API_BASE_URL}/events/${eventId}`)
       .then(response => response.data)
       .catch(error => {
         console.error('Error fetching event:', error);
