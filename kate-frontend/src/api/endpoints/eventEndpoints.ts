@@ -40,7 +40,11 @@ export async function getEventById(userId: number, eventId: UUID): Promise<Event
  * @returns {Promise<EventEntity | ApiErrorResponse>}
  */
 export async function createEvent(userId: number, eventData: EventEntity): Promise<EventEntity | ApiErrorResponse> {
-    return baseApi.post(`/company-events/users/${userId}/events`, eventData)
+    // В payload дата форматируется как строка в формате ISO 8601 без миллисекунд.
+    // Это необходимо для корректной обработки даты на стороне сервера.
+    const payload = {...eventData, date: eventData.date.toISOString().replace(/\.\d{3}Z$/, 'Z')};
+
+    return baseApi.post(`/company-events/users/${userId}/events`, payload)
         .then(response => response.data)
         .catch(error => {
             console.error("Error creating event:", error);

@@ -39,21 +39,13 @@ const CreateEvent = () => {
       participants: [],
       purchases: [],
       id: v4() as UUID,
-      name: formData?.name || "",
-      date: formData?.date ? Date.parse(formData?.date) as unknown as Date : Date.prototype,
-      place: formData?.place || "",
-      budget: formData?.budget || 0,
+      name: formData?.name,
+      date: formData?.date ? new Date(formData?.date) : Date.prototype,
+      place: formData?.place,
+      budget: formData?.budget,
       comment: formData?.comment
     }
 
-    // const eventData = {
-    //   title: formData.title,
-    //   date: eventDate,
-    //   location: formData.location || null,
-    //   budget: formData.budget ? parseFloat(formData.budget) : null,
-    //   note: formData.note || null,
-    // };
-    //
     const newEvent: EventEntity | ApiErrorResponse = await createEvent(user.id, eventFromForm);
 
     if (!newEvent || newEvent instanceof ApiErrorResponse) {
@@ -88,7 +80,39 @@ const CreateEvent = () => {
         title="Создание мероприятия" 
         showBackButton={true} 
       />
+      <div className="form-data-visualizer">
+        <h2>Form Data Preview</h2>
+        <div className="data-grid">
+          <div className="data-row">
+            <span className="data-label">Name:</span>
+            <span className="data-value">{formData?.name || 'Not provided'}</span>
+          </div>
 
+          <div className="data-row">
+            <span className="data-label">Date:</span>
+            <span className="data-value">
+            {formData?.date ? (formData.date) : 'Not set'}
+          </span>
+          </div>
+
+          <div className="data-row">
+            <span className="data-label">Place:</span>
+            <span className="data-value">{formData?.place || 'Not provided'}</span>
+          </div>
+
+          <div className="data-row">
+            <span className="data-label">Budget:</span>
+            <span className="data-value">
+            {formData?.budget !== undefined ? formData.budget : 'Not set'}
+          </span>
+          </div>
+
+          <div className="data-row">
+            <span className="data-label">Comment:</span>
+            <span className="data-value">{formData?.comment || 'No comments'}</span>
+          </div>
+        </div>
+      </div>
       {eventCreated ? (
         <div className="notification">
           <div className="notification-content">
@@ -113,11 +137,11 @@ const CreateEvent = () => {
       ) : (
         <form className="create-event-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="title">Название мероприятия*</label>
+            <label htmlFor="name">Название мероприятия</label>
             <input
               type="text"
-              id="title"
-              name="title"
+              id="name"
+              name="name"
               value={formData?.name}
               onChange={handleChange}
               required
@@ -136,23 +160,12 @@ const CreateEvent = () => {
             />
           </div>
 
-          {/*<div className="form-group">*/}
-          {/*  <label htmlFor="time">Время</label>*/}
-          {/*  <input*/}
-          {/*    type="time"*/}
-          {/*    id="time"*/}
-          {/*    name="time"*/}
-          {/*    value={formData.time}*/}
-          {/*    onChange={handleChange}*/}
-          {/*  />*/}
-          {/*</div>*/}
-
           <div className="form-group">
-            <label htmlFor="location">Место</label>
+            <label htmlFor="place">Место</label>
             <input
               type="text"
-              id="location"
-              name="location"
+              id="place"
+              name="place"
               value={formData?.place}
               onChange={handleChange}
               placeholder="Укажите место проведения"
@@ -173,10 +186,10 @@ const CreateEvent = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="note">Примечание</label>
+            <label htmlFor="comment">Примечание</label>
             <textarea
-              id="note"
-              name="note"
+              id="comment"
+              name="comment"
               value={formData?.comment}
               onChange={handleChange}
               placeholder="Дополнительная информация"

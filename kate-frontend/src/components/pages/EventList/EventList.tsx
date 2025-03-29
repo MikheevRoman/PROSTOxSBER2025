@@ -128,14 +128,14 @@ const EventList = () => {
             >
               <h2 className="event-title">{event.name}</h2>
               <div className="event-details">
-                {/*<p className="event-date">*/}
-                {/*  <span className="event-label">Дата:</span> {formatDate(event.date)}*/}
-                {/*</p>*/}
-                {/*{event.location && (*/}
-                {/*  <p className="event-location">*/}
-                {/*    <span className="event-label">Место:</span> {event.location}*/}
-                {/*  </p>*/}
-                {/*)}*/}
+                <p className="event-date">
+                  <span className="event-label">Дата:</span> {formatDate(event.date.toString())}
+                </p>
+                {event.place && (
+                  <p className="event-location">
+                    <span className="event-label">Место:</span> {event.place}
+                  </p>
+                )}
                 <div className="event-status">
                   <span className={`status-badge ${event.isOrganizer ? 'organizer' : 'participant'}`}>
                     {renderEventStatus(event)}

@@ -23,6 +23,11 @@ const EventDetails = () => {
 
   useEffect(() => {
     const loadEvent = async () => {
+      if (!user) {
+        navigate('/');
+        return;
+      }
+
       const eventData = await getEventById(user.id, eventId);
       if (eventData) {
         setEvent(eventData);
@@ -116,24 +121,24 @@ const EventDetails = () => {
 
       <div className="event-summary">
         <div className="event-info">
-          {/*<p className="event-date">*/}
-          {/*  <span className="event-label">Дата:</span> {formatDate(event.date)}*/}
-          {/*</p>*/}
-          {/*{event.location && (*/}
-          {/*  <p className="event-location">*/}
-          {/*    <span className="event-label">Место:</span> {event.location}*/}
-          {/*  </p>*/}
-          {/*)}*/}
-          {/*{event.budget && (*/}
-          {/*  <p className="event-budget">*/}
-          {/*    <span className="event-label">Бюджет:</span> {event.budget} руб.*/}
-          {/*  </p>*/}
-          {/*)}*/}
-          {/*{event.note && (*/}
-          {/*  <p className="event-note">*/}
-          {/*    <span className="event-label">Примечание:</span> {event.note}*/}
-          {/*  </p>*/}
-          {/*)}*/}
+          <p className="event-date">
+            <span className="event-label">Дата:</span> {formatDate(event.date.toString())}
+          </p>
+          {event.place && (
+            <p className="event-location">
+              <span className="event-label">Место:</span> {event.place}
+            </p>
+          )}
+          {event.budget && (
+            <p className="event-budget">
+              <span className="event-label">Бюджет:</span> {event.budget} руб.
+            </p>
+          )}
+          {event.comment && (
+            <p className="event-note">
+              <span className="event-label">Примечание:</span> {event.comment}
+            </p>
+          )}
           <p className="event-status">
             <span className={`status-badge ${event.isOrganizer ? 'organizer' : 'participant'}`}>
               {event.isOrganizer ? 'Организатор' : 'Участник'}
