@@ -46,13 +46,14 @@ export const EventForm: React.FC<EventFormProps> = (props: EventFormProps) => {
     return (
         <form className="create-event-form" onSubmit={handleSubmit}>
             <div className="form-group">
-                <label htmlFor="name">Название мероприятия</label>
+                <label htmlFor="name">Название мероприятия ({formData?.name?.length || 0}/55)</label>
                 <input
                     type="text"
                     id="name"
                     name="name"
                     value={formData?.name}
                     onChange={handleChange}
+                    maxLength={55}
                     required
                     placeholder="Введите название мероприятия"
                 />
