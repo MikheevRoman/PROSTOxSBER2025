@@ -75,7 +75,8 @@ public class CostResultServiceImpl implements CostResultService {
         List<Procurement> procurements = procurementRepository.findByContributorsAndStatus(
                 participant,
                 Procurement.FundraisingStatus.NONE,
-                Procurement.CompletionStatus.DONE);
+                Procurement.CompletionStatus.DONE,
+                participant.getEvent());
 
         return procurements.stream().map(p -> getPrice(
                         p,

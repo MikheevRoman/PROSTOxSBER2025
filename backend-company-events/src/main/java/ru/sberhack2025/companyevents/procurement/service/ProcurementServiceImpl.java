@@ -162,7 +162,7 @@ public class ProcurementServiceImpl extends DefaultServiceImpl<
     public List<ContributionView> getAllByContributor(UUID participantId) {
         Participant participant = participantRepository.find(participantId);
         Integer participationsNumber = participant.getEvent().getParticipants().size();
-        List<Procurement> procurements = repository.findByContributorsContainingOrContributorsIsEmpty(participant);
+        List<Procurement> procurements = repository.findProcurementsByEventAndContributor(participant.getEvent(), participant);
         return mapper.toContributionView(procurements, participationsNumber);
     }
 
