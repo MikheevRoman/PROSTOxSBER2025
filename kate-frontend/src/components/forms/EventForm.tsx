@@ -92,7 +92,7 @@ export const EventForm: React.FC<EventFormProps> = (props: EventFormProps) => {
             </div>
 
             <div className="form-group">
-                <label htmlFor="comment">Примечание ({formData?.comment?.length}/500)</label>
+                <label htmlFor="comment">Примечание ({formData?.comment?.length || 0}/500)</label>
                 <textarea
                     id="comment"
                     name="comment"

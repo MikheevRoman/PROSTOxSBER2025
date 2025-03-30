@@ -230,12 +230,13 @@ const AddPurchase = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="comment">Примечание</label>
+          <label htmlFor="comment">Примечание ({formData?.comment?.length || 0}/200)</label>
           <textarea
             id="comment"
             name="comment"
             value={formData?.comment}
             onChange={handleChange}
+            maxLength={200}
             placeholder="Дополнительная информация"
             rows={3}
           ></textarea>
