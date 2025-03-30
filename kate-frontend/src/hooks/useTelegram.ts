@@ -74,7 +74,7 @@ export const useTelegram = () => {
                 //     return;
                 // }
 
-                const webApp = window.Telegram.WebApp;
+                // const webApp = window.Telegram.WebApp;
 
                 // 3. Обработка события готовности
                 const handleReady = () => {
