@@ -13,7 +13,20 @@ import {
 } from "../../../../api/endpoints/procurementEndpoints";
 import Participant from "../../../../model/Participant";
 import {getEventParticipants} from "../../../../api/endpoints/participantsEndpoints";
-import {Box, Chip} from "@mui/material";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  Chip,
+  Box,
+  Tooltip
+} from "@mui/material";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 interface PurchasesProps {
   event: EventEntity;
@@ -194,6 +207,9 @@ const PurchasesTab = (props: PurchasesProps) => {
   const [isMobileView, setIsMobileView] = useState(window.innerWidth < 768);
 
   async function handleDeletePurchase(purchaseId: UUID) {
+    const confirmDelete = window.confirm("Вы уверены, что хотите удалить эту закупку?");
+    if (!confirmDelete) return;
+
     await deleteProcurement(eventId, purchaseId);
     loadProcurements();
   }
@@ -208,212 +224,93 @@ const PurchasesTab = (props: PurchasesProps) => {
   }, []);
 
   return (
-    <div className="tab-container">
-      <div className="tab-header">
-        <h2>Список закупок</h2>
-        <button className="button" onClick={onAddPurchase}>
-          Добавить
-        </button>
-      </div>
-
-      {purchases.length === 0 ? (
-        <div className="empty-tab">
-          <p>Список закупок пуст</p>
-          <button className="button" onClick={onAddPurchase}>
-            Добавить закупку
-          </button>
+      <div className="tab-container">
+        <div className="tab-header">
+          <h2>Список закупок</h2>
+          <Button variant="contained" color="primary" onClick={onAddPurchase}>Добавить</Button>
         </div>
-      ) : (
-        <>
-          {/* Мобильный вид: карточки вместо таблицы */}
-          {isMobileView ? (
-            <div className="purchases-mobile-view">
-              {sortedPurchases.map((purchase, index) => (
-                <div key={purchase.id} className="purchase-card">
-                  <div className="purchase-header">
-                    <div className="purchase-title">
-                      <div className="primary-text">{index + 1}. {purchase.name}</div>
-                      <div className="secondary-text">{getStatusText(purchase.completionStatus)}</div>
-                    </div>
-                    <div className="purchase-actions">
-                      <button 
-                        className="action-button edit"
-                        onClick={(e) => handleEditPurchase(purchase.id, e)}
-                        title="Редактировать"
-                      >
-                        ✎
-                      </button>
-                      {!isUserContributor(purchase) && (
-                        <button 
-                          className="action-button join"
-                          onClick={(e) => handleAddToContributors(purchase.id, e)}
-                          title="Добавить себя в список скидывающихся"
-                        >
-                          +
-                        </button>
-                      )}
-                      <button
-                          className="action-button"
-                          onClick={(e) => handleDeletePurchase(purchase.id)}
-                          title="Удалить"
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  </div>
-                  <div className="purchase-details">
-                    <div className="purchase-info">
-                      <span className="info-label">Стоимость:</span>
-                      <span className="info-value">{purchase.price ? `${purchase.price} руб.` : '—'}</span>
-                      {getCollectionText(purchase.fundraisingStatus) && (
-                        <span className="secondary-text">{getCollectionText(purchase.fundraisingStatus)}</span>
-                      )}
-                    </div>
-                    <div className="purchase-info">
-                      <span className="info-label">Ответственный:</span>
-                      <span className="info-value">
-                         {getParticipantNameById(purchase.responsibleId)}
-                      </span>
-                    </div>
-                    <div className="purchase-info">
-                      <span className="info-label">Кто скидывается:</span>
-                      <span className="info-value">{getContributorsText(purchase.contributors)}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <div className="purchase-summary">
-                <div className="total-amount">
-                  <strong>Итого:</strong> {totalAmount} руб.
-                </div>
-                {event.budget && (
-                  <div className="budget-difference">
-                    <strong>Разница с бюджетом:</strong> 
-                    <span className={budgetDifference >= 0 ? 'positive' : 'negative'}>
-                      {budgetDifference >= 0 ? '+' : ''}{budgetDifference} руб.
-                    </span>
-                  </div>
-                )}
-              </div>
+
+        {purchases.length === 0 ? (
+            <div className="empty-tab">
+              <p>Список закупок пуст</p>
+              <Button variant="contained" color="primary" onClick={onAddPurchase}>Добавить закупку</Button>
             </div>
-          ) : (
-            /* Десктопный вид: обычная таблица */
-            <div className="table-container purchases-table">
-              <table>
-                <thead>
-                  <tr>
-                    <th 
-                      onClick={() => handleSort('title')} 
-                      className="sortable column-title"
-                    >
-                      Название{renderSortIndicator('title')}
-                    </th>
-                    <th 
-                      onClick={() => handleSort('cost')} 
-                      className="sortable column-cost"
-                    >
-                      Стоимость{renderSortIndicator('cost')}
-                    </th>
-                    <th 
-                      onClick={() => handleSort('responsible')} 
-                      className="sortable"
-                    >
-                      Ответственный{renderSortIndicator('responsible')}
-                    </th>
-                    <th 
-                      onClick={() => handleSort('contributors')} 
-                      className="sortable"
-                    >
-                      Кто скидывается{renderSortIndicator('contributors')}
-                    </th>
-                    <th 
-                      onClick={() => handleSort('status')} 
-                      className="sortable"
-                    >
-                      Статус{renderSortIndicator('status')}
-                    </th>
-                    <th className="actions-column">Действия</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedPurchases.map((purchase, index) => (
-                    <tr key={purchase.id}>
-                      <td className="combined-title">
-                        <div className="primary-text">{index + 1}. {purchase.name}</div>
-                        <div className="secondary-text">{getStatusText(purchase.completionStatus)}</div>
-                      </td>
-                      <td className="combined-cost">
-                        <div className="primary-text">{purchase.price ? `${purchase.price} руб.` : '—'}</div>
-                        {getCollectionText(purchase.fundraisingStatus) && (
-                          <div className="secondary-text">{getCollectionText(purchase.fundraisingStatus)}</div>
-                        )}
-                      </td>
-                      <td>
-                        {getParticipantNameById(purchase.responsibleId)}
-                      </td>
-                      <td>
-                        {purchase.contributors && purchase.contributors.length > 0 ? (
-                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {purchase.contributors.map((value) => (
-                              <Chip
-                                  key={value}
-                                  label={getParticipantNameById(value)}
-                              />
-                          ))}
-                        </Box>) : 'Нет ответственных'}
-                      </td>
-                      <td>{getStatusText(purchase.completionStatus)}</td>
-                      <td className="actions-cell">
-                        <button 
-                          className="action-button edit"
-                          onClick={(e) => handleEditPurchase(purchase.id, e)}
-                          title="Редактировать"
-                        >
-                          ✎
-                        </button>
-                        {!isUserContributor(purchase) && (
-                          <button 
-                            className="action-button join"
-                            onClick={(e) => handleAddToContributors(purchase.id, e)}
-                            title="Добавить себя в список скидывающихся"
-                          >
-                            +
-                          </button>
-                        )}
-                        <button
-                            className="action-button"
-                            onClick={(e) => handleDeletePurchase(purchase.id)}
-                            title="Удалить"
-                        >
-                          🗑️
-                        </button>
-                      </td>
-                    </tr>
+        ) : (
+            isMobileView ? (
+                <div className="purchases-mobile-view">
+                  {purchases.map((purchase, index) => (
+                      <Paper key={purchase.id} className="purchase-card" elevation={3}>
+                        <Box p={2}>
+                          <Box display="flex" justifyContent="space-between" alignItems="center">
+                            <Box>
+                              <strong>{index + 1}. {purchase.name}</strong>
+                              <p>{getStatusText(purchase.completionStatus)}</p>
+                            </Box>
+                            <Box>
+                              <Button size="small" onClick={(e) => handleEditPurchase(purchase.id, e)}>✎</Button>
+                              {!isUserContributor(purchase) && (
+                                  <Button size="small" onClick={(e) => handleAddToContributors(purchase.id, e)}>+</Button>
+                              )}
+                              <Button size="small" onClick={(e) => handleDeletePurchase(purchase.id)}>🗑️</Button>
+                            </Box>
+                          </Box>
+                          <p>Стоимость: {purchase.price ? `${purchase.price} руб.` : '—'}</p>
+                          <p>Ответственный: {getParticipantNameById(purchase.responsibleId)}</p>
+                          <p>Кто скидывается: {getContributorsText(purchase.contributors)}</p>
+                        </Box>
+                      </Paper>
                   ))}
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td colSpan={2} className="total-row">
-                      <strong>Итого:</strong> {totalAmount} руб.
-                    </td>
-                    <td colSpan={5}>
-                      {event.budget && (
-                        <div className="budget-difference">
-                          <strong>Разница с бюджетом:</strong> 
-                          <span className={budgetDifference >= 0 ? 'positive' : 'negative'}>
-                            {budgetDifference >= 0 ? '+' : ''}{budgetDifference} руб.
-                          </span>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          )}
-        </>
-      )}
-    </div>
+                </div>
+            ) : (
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Название</TableCell>
+                        <TableCell>Стоимость</TableCell>
+                        <TableCell>Ответственный</TableCell>
+                        <TableCell>Кто скидывается</TableCell>
+                        <TableCell>Статус</TableCell>
+                        <TableCell>Действия</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {purchases.map((purchase, index) => (
+                          <TableRow key={purchase.id}>
+                            <TableCell>{index + 1}. {purchase.name}</TableCell>
+                            <TableCell>{purchase.price ? `${purchase.price} руб.` : '—'}</TableCell>
+                            <TableCell>{getParticipantNameById(purchase.responsibleId)}</TableCell>
+                            <TableCell>
+                              {purchase.contributors && purchase.contributors.length > 0 ? (
+                                  <Box display="flex" flexWrap="wrap" gap={1}>
+                                    {purchase.contributors.map((value) => (
+                                        <Chip key={value} label={getParticipantNameById(value)} />
+                                    ))}
+                                  </Box>
+                              ) : 'Никто не скидывается'}
+                            </TableCell>
+                            <TableCell>{getStatusText(purchase.completionStatus)}</TableCell>
+                            <TableCell>
+                              <Tooltip title="Редактировать">
+                                <Button size="small" onClick={(e) => handleEditPurchase(purchase.id, e)}>✎</Button>
+                              </Tooltip>
+                              {!isUserContributor(purchase) && (
+                                  <Tooltip title="Добавить себя в список скидывающихся">
+                                    <Button size="small" onClick={(e) => handleAddToContributors(purchase.id, e)}>+</Button>
+                                  </Tooltip>
+                              )}
+                              <Tooltip title="Удалить">
+                                <Button size="small" onClick={() => handleDeletePurchase(purchase.id)}>🗑️</Button>
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+            )
+        )}
+      </div>
   );
 };
 
