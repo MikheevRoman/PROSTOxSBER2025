@@ -6,24 +6,35 @@ declare global {
     }
 }
 
+const API_KEY_JS = '9346f310-d786-4085-b396-97dca6243c98';
+const API_KEY = '174f2ef9-0596-4f81-ba10-80589ec5b8fa';
+
 const YandexSuggestInput = ({ value, onChange }: { value: string; onChange: (value: string) => void }) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const [isMapsLoaded, setIsMapsLoaded] = useState(false);
-    const API_KEY = '174f2ef9-0596-4f81-ba10-80589ec5b8fa';
     const suggestViewRef = useRef<any>(null);
+    const mapsScriptRef = useRef<HTMLScriptElement | null>(null);
+
+    const cleanupSuggestView = useCallback(() => {
+        if (suggestViewRef.current) {
+            try {
+                suggestViewRef.current.destroy();
+                suggestViewRef.current = null;
+            } catch (error) {
+                console.error('Error cleaning up SuggestView:', error);
+            }
+        }
+    }, []);
 
     const initSuggest = useCallback(() => {
         if (!window.ymaps || !inputRef.current) return;
 
+        cleanupSuggestView(); // Clean up any existing instance
+
         try {
-            setTimeout(() => {
-                const popup = document.querySelector('.ymaps-suggest-popup') as HTMLElement;
-            }, 100);
-
-
             suggestViewRef.current = new window.ymaps.SuggestView(inputRef.current, {
-                results: 5,
-                boundedBy: [[55.55, 37.42], [55.95, 37.82]]
+                boundedBy: [[55.55, 37.42], [55.95, 37.82]],
+                results: 5
             });
 
             suggestViewRef.current.events.add('select', (e: any) => {
@@ -34,7 +45,7 @@ const YandexSuggestInput = ({ value, onChange }: { value: string; onChange: (val
         } catch (error) {
             console.error('Ошибка инициализации подсказок:', error);
         }
-    }, [onChange]);
+    }, [onChange, cleanupSuggestView]);
 
     useEffect(() => {
         const loadYandexMaps = () => {
@@ -44,9 +55,15 @@ const YandexSuggestInput = ({ value, onChange }: { value: string; onChange: (val
                 return;
             }
 
+            // Remove any existing script first
+            if (mapsScriptRef.current) {
+                document.head.removeChild(mapsScriptRef.current);
+            }
+
             const script = document.createElement('script');
-            script.src = `https://api-maps.yandex.ru/2.1/?apikey=9346f310-d786-4085-b396-97dca6243c98&suggest_apikey=174f2ef9-0596-4f81-ba10-80589ec5b8fa&lang=ru_RU&load=package.full`;
+            script.src = `https://api-maps.yandex.ru/2.1/?apikey=${API_KEY_JS}&suggest_apikey=${API_KEY}&lang=ru_RU&load=package.full`;
             script.async = true;
+            mapsScriptRef.current = script;
 
             script.onload = () => {
                 window.ymaps.ready(() => {
@@ -65,11 +82,22 @@ const YandexSuggestInput = ({ value, onChange }: { value: string; onChange: (val
         loadYandexMaps();
 
         return () => {
-            if (suggestViewRef.current) {
-                suggestViewRef.current.destroy();
+            cleanupSuggestView();
+
+            // Clean up the script if component unmounts
+            if (mapsScriptRef.current) {
+                document.head.removeChild(mapsScriptRef.current);
+                mapsScriptRef.current = null;
             }
         };
-    }, [initSuggest]);
+    }, [initSuggest, cleanupSuggestView]);
+
+    // Reinitialize suggest view when input ref changes
+    useEffect(() => {
+        if (isMapsLoaded && inputRef.current) {
+            initSuggest();
+        }
+    }, [isMapsLoaded, initSuggest]);
 
     return (
         <div className="suggest-container">
