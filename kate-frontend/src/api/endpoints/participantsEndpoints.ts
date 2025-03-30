@@ -44,3 +44,24 @@ export async function getParticipantByUserIdAndEventId(tgUserId: number, eventId
             return error.response?.data as ApiErrorResponse || { error: "Unknown error" };
         });
 }
+
+/**
+ * Обновление данных участника по его ID
+ * @param participantId ID участника
+ * @param updateData Данные для обновления
+ * @returns {Promise<Participant | ApiErrorResponse>}
+ */
+export async function updateParticipantById(
+    participantId: string,
+    updateData: { hasPayment: boolean }
+): Promise<Participant | ApiErrorResponse> {
+  return baseApi.patch(`/company-events/participants/${participantId}`, updateData)
+      .then(response => response.data)
+      .catch(error => {
+        console.error(`Ошибка обновления данных участника с ID: ${participantId}`, error);
+        return error.response?.data as ApiErrorResponse || { error: "Unknown error" };
+      });
+}
+
+
+

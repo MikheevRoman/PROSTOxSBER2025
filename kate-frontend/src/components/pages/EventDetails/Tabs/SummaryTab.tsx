@@ -9,6 +9,7 @@ import { UUID } from "node:crypto";
 import Participant from "../../../../model/Participant";
 import EventEntity from "../../../../model/EventEntity";
 import TelegramUser from "../../../../model/TelegramUser";
+import {updateParticipantById} from "../../../../api/endpoints/participantsEndpoints";
 
 interface ParticipantItemProps {
   event: EventEntity;
@@ -56,13 +57,22 @@ const SummaryTab = (event: ParticipantItemProps) => {
     }
   };
 
-  // TODO: Должен обновляться статус участника мероприятия на сервере
-  const handlePaymentStatusChange = (participantId: string, paid: boolean) => {
-    setParticipantSummary(prevSummary =>
-        prevSummary.map(p =>
-            p.participantId === participantId ? { ...p, paid } : p
-        )
-    );
+  const handlePaymentStatusChange = async (participantId: string, paid: boolean) => {
+    try {
+      // Отправляем обновление на сервер
+      const updatedParticipant = await updateParticipantById(participantId, { hasPayment: paid });
+
+      // Обновляем состояние на клиенте
+      setParticipantSummary(prevSummary =>
+          prevSummary.map(p =>
+              p.participantId === participantId ? { ...p, hasPayment: paid } : p
+          )
+      );
+
+      console.log(`Статус платежа обновлён для участника ${participantId}`);
+    } catch (error) {
+      console.error(`Ошибка при обновлении статуса платежа участника ${participantId}:`, error);
+    }
   };
 
   return (

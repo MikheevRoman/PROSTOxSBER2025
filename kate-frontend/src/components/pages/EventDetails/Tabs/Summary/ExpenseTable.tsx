@@ -25,15 +25,6 @@ const ExpenseTable = ({ participantSummary, onPaymentStatusChange }) => {
         }
     };
 
-    // TODO: Должны меняться статусы, если участник уже оплатил перевод, при нажатии на чекбокс.
-    // const handlePaymentStatusChange = (participantId, isPaid) => {
-    //   setParticipantSummary(prevSummary =>
-    //     prevSummary.map(p =>
-    //       p.id === participantId ? { ...p, paid: isPaid } : p
-    //     )
-    //   );
-    // };
-
     return (
         <div className="table-container summary-table">
             <table>
@@ -56,7 +47,7 @@ const ExpenseTable = ({ participantSummary, onPaymentStatusChange }) => {
                             <td>
                                 <input
                                     type="checkbox"
-                                    checked={!!participant.paid}
+                                    checked={!!participant.hasPayment}
                                     onChange={(e) => onPaymentStatusChange(participant.participantId, e.target.checked)}
                                 />
                             </td>
