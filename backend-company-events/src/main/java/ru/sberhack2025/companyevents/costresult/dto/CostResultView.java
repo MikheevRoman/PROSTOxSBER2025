@@ -34,5 +34,8 @@ public class CostResultView {
 
     @Schema(description = "Text for reminder message", example = "Маша, переведи мне 300 руб. Данные перевода: +7 (999) 999-99-99, сбер")
     String notificationMessage;
-    
+
+    @Schema(description = "True if organizer transfer money to participant", example = "true")
+    Boolean hasPayment;
+
 }
