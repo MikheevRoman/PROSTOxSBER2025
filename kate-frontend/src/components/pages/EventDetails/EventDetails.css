@@ -20,6 +20,19 @@
 .event-budget,
 .event-note {
   margin-bottom: 0.5rem;
+
+}
+
+.event-comment {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  display: inline-block;
+  overflow: hidden;
+  resize: vertical; /* если нужно разрешить ручное изменение размера */
+  min-height: 20px; /* минимальная высота */
+  max-height: 200px; /* максимальная высота, если нужно ограничить */
 }
 
 .event-label {

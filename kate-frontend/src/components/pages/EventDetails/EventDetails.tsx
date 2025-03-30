@@ -163,7 +163,7 @@ const EventDetails = () => {
             </p>
           )}
           {event.comment && (
-            <p className="event-note">
+            <p className="event-note event-comment">
               <span className="event-label">Примечание:</span> {event.comment}
             </p>
           )}

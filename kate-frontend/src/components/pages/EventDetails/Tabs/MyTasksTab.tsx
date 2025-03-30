@@ -57,7 +57,7 @@ const MyTasksTab = ({ event }) => {
   const handleTaskStatusChange = async (taskId: UUID, newStatus: CompletionStatus) => {
     let procurementToUpdate = await getProcurementById(taskId);
     procurementToUpdate.completionStatus = newStatus;
-    await updateProcurement(eventId, taskId, procurementToUpdate);
+    await updateProcurement(eventId, taskId, procurementToUpdate, selectedParticipantId);
     loadTasks(selectedParticipantId);
   };
 
@@ -65,7 +65,7 @@ const MyTasksTab = ({ event }) => {
     if (newCostString) {
       let procurementToUpdate = await getProcurementById(taskId);
       procurementToUpdate.price = parseFloat(newCostString);
-      await updateProcurement(eventId, taskId, procurementToUpdate);
+      await updateProcurement(selectedParticipantId, eventId, procurementToUpdate, selectedParticipantId);
       loadTasks(selectedParticipantId);
     }
   };

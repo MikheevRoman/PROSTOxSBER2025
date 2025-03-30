@@ -99,7 +99,7 @@ const AddPurchase = () => {
       contributors: formData.contributors,
       fundraisingStatus: formData.fundraisingStatus
     };
-    console.log(purchaseData);
+
     if (isEditing) {
       const eventParticipants = (await getEventParticipants(eventId));
       const participant = (eventParticipants as Participant[]).find(e => e.tgUserId === user.id);
