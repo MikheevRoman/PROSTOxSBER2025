@@ -172,41 +172,6 @@ const AddPurchase = () => {
           </Select>
         </div>
 
-
-        {/*{*/}
-        {/*  // Service code to diplay all current participants*/}
-        {/*  formData?.contributors.map(participant => (*/}
-        {/*        <div key={participant}>{participant}</div>*/}
-        {/*  ))*/}
-        {/*}*/}
-
-        {/*<div className="form-group">*/}
-        {/*  <label htmlFor="contributors">Кто скидывается</label>*/}
-        {/*  <select*/}
-        {/*    id="contributors"*/}
-        {/*    name="contributors"*/}
-        {/*    value={formData?.contributors}*/}
-        {/*    onChange={handleChange}*/}
-        {/*  >*/}
-        {/*    <option value="all">Все участники</option>*/}
-        {/*    <option value="currentUser">Только вы</option>*/}
-        {/*    /!* В реальном приложении здесь можно было бы добавить возможность выбора конкретных участников *!/*/}
-        {/*  </select>*/}
-        {/*</div>*/}
-
-        {/*<div className="form-group">*/}
-        {/*  <label htmlFor="collection">Сбор средств</label>*/}
-        {/*  <select*/}
-        {/*    id="collection"*/}
-        {/*    name="collection"*/}
-        {/*    value={formData.collection}*/}
-        {/*    onChange={handleChange}*/}
-        {/*  >*/}
-        {/*    <option value="">Не требуется</option>*/}
-        {/*    <option value="planned">Планируется</option>*/}
-        {/*  </select>*/}
-        {/*</div>*/}
-
         <div className="form-group">
           <label htmlFor="completionStatus">Статус закупки</label>
           <select
