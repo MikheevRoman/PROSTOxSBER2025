@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../common/Header';
 import Tabs from '../../common/Tabs';
@@ -12,14 +12,41 @@ import {UUID} from "node:crypto";
 import EventEntity from "../../../model/EventEntity";
 import {useTelegramAuth} from "../../../context/TelegramAuthContext";
 import {getEventById} from "../../../api/endpoints/eventEndpoints";
+import {getParticipantByUserIdAndEventId} from "../../../api/endpoints/participantsEndpoints";
+import Participant from "../../../model/Participant"
+import ApiErrorResponse from "../../../model/ApiErrorResponse";
+
 
 const EventDetails = () => {
-  const eventId: UUID = (useParams()).eventId as UUID;
+  const { eventId } = useParams<{ eventId: UUID }>();
   const navigate = useNavigate();
+  const { user } = useTelegramAuth();
+
   const [event, setEvent] = useState<EventEntity | null>(null);
+  const [participantId, setParticipantId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('purchases');
   const [loading, setLoading] = useState<boolean>(true);
-  const { user } = useTelegramAuth();
+
+  const isCurrentUserOrganizer = () => event?.organizerTgUserId === user?.id;
+
+  /**
+   * Запрашивает ID участника по userId и eventId
+   */
+  const fetchParticipantId = useCallback(async () => {
+    try {
+      if (!user || !eventId) return;
+      const participant = await getParticipantByUserIdAndEventId(user.id, eventId);
+      if (typeof participant === 'string') {
+        setParticipantId(participant); // Просто сохраняем строку (ID)
+      } else if (typeof participant === 'object' && participant !== null && 'error' in participant) {
+        console.error('Ошибка при получении participantId:', participant.error);
+      } else {
+        console.error('Неожиданный ответ от API:', participant);
+      }
+    } catch (error) {
+      console.error('Ошибка при запросе participantId:', error);
+    }
+  }, [user, eventId]);
 
   useEffect(() => {
     const loadEvent = async () => {
@@ -28,22 +55,24 @@ const EventDetails = () => {
         return;
       }
 
-      const eventData = await getEventById(user.id, eventId);
-      if (eventData) {
-        setEvent(eventData);
-      } else {
-        // Если мероприятие не найдено, перенаправляем на главную
+      try {
+        const eventData = await getEventById(user.id, eventId);
+        if (eventData) {
+          setEvent(eventData);
+          fetchParticipantId();
+        } else {
+          navigate('/');
+        }
+      } catch (error) {
+        console.error(error);
         navigate('/');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
-
     loadEvent();
-  }, [eventId]);
+  }, [user, eventId, fetchParticipantId, navigate]);
 
-  function isCurrentUserOrganizer(): boolean {
-    return event?.organizerTgUserId === user?.id;
-  }
 
   const handleEditEvent = () => {
     navigate(`/event/${eventId}/edit`);
@@ -70,10 +99,9 @@ const EventDetails = () => {
     const tabs = [
       { id: 'purchases', label: 'Закупки' },
       { id: 'contributions', label: 'Мои взносы' },
-      { id: 'tasks', label: 'Мои задачи' },
+      { id: 'tasks', label: 'Задачи' },
       { id: 'participants', label: 'Участники' },
     ];
-
     // Вкладка "Итоги" доступна только организатору
     if (isCurrentUserOrganizer()) {
       tabs.push({ id: 'summary', label: 'Итоги' });
@@ -89,7 +117,7 @@ const EventDetails = () => {
       case 'purchases':
         return <PurchasesTab event={event} onAddPurchase={handleAddPurchase} />;
       case 'contributions':
-        return <MyContributionsTab event={event} />;
+        return participantId ? <MyContributionsTab participantId={participantId} /> : <p>Загрузка...</p>;
       case 'tasks':
         return <MyTasksTab event={event} />;
       case 'participants':
@@ -101,13 +129,9 @@ const EventDetails = () => {
     }
   };
 
-  if (loading) {
-    return <div className="loading">Загрузка...</div>;
-  }
+  if (loading) { return <div className="loading">Загрузка...</div>; }
 
-  if (!event) {
-    return <div className="error">Мероприятие не найдено</div>;
-  }
+  if (!event) { return <div className="error">Мероприятие не найдено</div>; }
 
   return (
     <div className="event-details-container">

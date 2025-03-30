@@ -1,5 +1,4 @@
 import { UUID } from "node:crypto";
-import Purchase from "./Purchase";
 
 interface EventEntity {
     id: UUID,
@@ -12,9 +11,6 @@ interface EventEntity {
     organizerTgUserId: number,
     eventRefCode: string,
     createdAt: Date
-
-    // ?????
-    purchases: Purchase[],
 }
 
 export default EventEntity;

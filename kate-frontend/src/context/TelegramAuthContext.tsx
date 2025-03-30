@@ -28,30 +28,41 @@ const TelegramAuthContext = createContext<TelegramAuthContextType>({ user: null,
 export const TelegramAuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     // Состояние для хранения данных пользователя
     const { tg } = useTelegram();
-    const [user, setUser] = useState<TelegramUser | null>(null);
+    // Сохраняем пользователя в localStorage
+    const [user, setUser] = useState<TelegramUser | null>(() => {
+        const storedUser = localStorage.getItem("telegram_user");
+        return storedUser ? JSON.parse(storedUser) : null;
+    });
 
     useEffect(() => {
         // Для разработки - можно установить мок через localStorage
-        if (process.env.NODE_ENV === 'development') {
+        if (!(tg?.initDataUnsafe?.user) && process.env.NODE_ENV === 'development') {
             const mockUser = localStorage.getItem('debug:telegram_user');
             if (mockUser) {
-                setUser(JSON.parse(mockUser));
+                const parsedMockUser = JSON.parse(mockUser);
+                setUser(parsedMockUser);
+                localStorage.setItem("telegram_user", JSON.stringify(parsedMockUser)); // <-- Добавляем запись
                 return;
             }
         }
 
         if (tg?.initDataUnsafe?.user) {
-            console.log("tg updated:", tg);
-            const userData = tg.initDataUnsafe.user;
-            setUser({
-                id: userData.id,
-                first_name: userData.first_name,
-                last_name: userData.last_name,
-                username: userData.username,
-                photo_url: userData.photo_url,
+            console.log('Telegram user:', tg.initDataUnsafe.user);
+            const userData = {
+                id: tg.initDataUnsafe.user.id,
+                first_name: tg.initDataUnsafe.user.first_name,
+                last_name: tg.initDataUnsafe.user.last_name,
+                username: tg.initDataUnsafe.user.username,
+                photo_url: tg.initDataUnsafe.user.photo_url,
                 auth_date: tg.initDataUnsafe.auth_date,
                 hash: tg.initDataUnsafe.hash
-            });
+            };
+            const storedUser = localStorage.getItem("telegram_user");
+            if (!storedUser || JSON.stringify(userData) !== storedUser) {
+                console.log("Обновление данных Telegram пользователя", userData);
+                setUser(userData);
+                localStorage.setItem("telegram_user", JSON.stringify(userData));
+            }
         }
     }, [tg]);
 

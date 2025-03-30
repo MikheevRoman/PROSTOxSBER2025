@@ -9,7 +9,7 @@ import {deleteEvent, getEvents} from "../../../api/endpoints/eventEndpoints";
 
 const EventList = () => {
   const [events, setEvents] = useState<EventEntity[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user } = useTelegramAuth();
@@ -21,7 +21,7 @@ const EventList = () => {
       return;
     }
 
-    setLoading(true);
+    // setLoading(true);
     setError(null);
 
     let eventsList: EventEntity[] = [];
@@ -56,6 +56,9 @@ const EventList = () => {
   const handleDeleteEvent = async (clickEvent: React.MouseEvent<HTMLButtonElement, MouseEvent>, eventId: UUID) => {
     clickEvent.stopPropagation();
     if (!user) return;
+
+    const confirmDelete = window.confirm("Вы уверены, что хотите удалить это мероприятие? Отменить действие будет невозможно.");
+    if (!confirmDelete) return;
 
     try {
       await deleteEvent(eventId);
@@ -114,7 +117,6 @@ const EventList = () => {
           </button>
         }
       />
-
       <div className="event-list">
         {!events || events.length === 0 ? (
           <div className="empty-state">

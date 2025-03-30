@@ -1,7 +1,8 @@
+'use client';
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../common/Header';
-import { getEventInviteLink } from '../../../services/eventService';
 import './CreateEvent.css';
 import EventFormData from "../../../model/EventFormData";
 import EventEntity from "../../../model/EventEntity";
@@ -9,48 +10,48 @@ import ApiErrorResponse from '../../../model/ApiErrorResponse';
 import {v4} from "uuid";
 import {UUID} from "node:crypto";
 import {useTelegramAuth} from "../../../context/TelegramAuthContext";
-import {createEvent} from "../../../api/endpoints/eventEndpoints";
+import {createEvent, getEventInviteLink} from "../../../api/endpoints/eventEndpoints";
+import {EventForm} from "../../forms/EventForm";
 
+/**
+ * Компонент страницы создания мероприятия
+ */
 const CreateEvent = () => {
-  const [formData, setFormData] = useState<EventFormData>();
   const [eventCreated, setEventCreated] = useState(false);
-  const [createdEvent, setCreatedEvent] = useState<EventEntity | null>(null);
+  const [inviteLink, setInviteLink] = useState<string>('');
   const navigate = useNavigate();
   const { user } = useTelegramAuth();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prevData => ({
-      ...prevData,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, formData: EventFormData) => {
     e.preventDefault();
-
+    console.log(formData);
     const eventFromForm: EventEntity = {
-      createdAt: Date.prototype,
+      createdAt: new Date(),
       eventRefCode: "",
       organizerCardInfo: "",
       organizerTgUserId: user.id,
-      purchases: [],
       id: v4() as UUID,
       name: formData?.name,
-      date: formData?.date ? new Date(formData?.date) : Date.prototype,
+      date: formData?.date ? new Date(formData?.date) : new Date(),
       place: formData?.place,
       budget: formData?.budget,
       comment: formData?.comment
     }
 
-    const newEvent: EventEntity | ApiErrorResponse = await createEvent(user.id, eventFromForm);
+    try {
+      const newEvent = await createEvent(user.id, eventFromForm);
 
-    if (!newEvent || newEvent instanceof ApiErrorResponse) {
-      return;
+      if (newEvent instanceof ApiErrorResponse) {
+        console.error('Error creating event:', newEvent);
+        return;
+      }
+
+      const link = await getEventInviteLink(user.id, newEvent.id);
+      setInviteLink(link);
+      setEventCreated(true);
+    } catch (error) {
+      console.error('Error:', error);
     }
-
-    setCreatedEvent(newEvent);
-    setEventCreated(true);
   };
 
   const handleCloseNotification = () => {
@@ -58,118 +59,49 @@ const CreateEvent = () => {
   };
 
   const copyInviteLink = () => {
-    if (!createdEvent) {
-      return;
-    }
-    const link = getEventInviteLink(createdEvent.id);
-    navigator.clipboard.writeText(link)
-      .then(() => {
-        alert('Ссылка-приглашение скопирована в буфер обмена');
-      })
-      .catch(err => {
-        console.error('Не удалось скопировать ссылку: ', err);
-      });
+    if (!inviteLink) return;
+
+    navigator.clipboard.writeText(inviteLink)
+        .then(() => {
+          alert('Ссылка-приглашение скопирована в буфер обмена');
+        })
+        .catch(err => {
+          console.error('Не удалось скопировать ссылку: ', err);
+        });
   };
 
   return (
-    <div className="create-event-container">
-      <Header 
-        title="Создание мероприятия" 
-        showBackButton={true} 
-      />
-      {eventCreated ? (
-        <div className="notification">
-          <div className="notification-content">
-            <h2>Мероприятие создано!</h2>
-            <p>Вы назначены организатором этого мероприятия.</p>
-            <div className="invite-link">
-              <p>Пригласите участников по ссылке:</p>
-              <div className="invite-link-action">
+      <div className="create-event-container">
+        <Header
+            title="Создание мероприятия"
+            showBackButton={true}
+        />
+        {eventCreated ? (
+            <div className="notification">
+              <div className="notification-content">
+                <h2>Мероприятие создано!</h2>
+                <p>Вы назначены организатором этого мероприятия.</p>
+                <div className="invite-link">
+                  <p>Пригласите участников по ссылке:</p>
+                  <div className="invite-link-action">
                 <span className="invite-link-text">
-                  {createdEvent && getEventInviteLink(createdEvent.id)}
+                  {inviteLink}
                 </span>
-                <button className="button secondary" onClick={copyInviteLink}>
-                  Копировать
+                    <button className="button secondary" onClick={copyInviteLink}>
+                      Копировать
+                    </button>
+                  </div>
+                </div>
+                <button className="button" onClick={handleCloseNotification}>
+                  Закрыть
                 </button>
               </div>
             </div>
-            <button className="button" onClick={handleCloseNotification}>
-              Закрыть
-            </button>
-          </div>
-        </div>
-      ) : (
-        <form className="create-event-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">Название мероприятия</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData?.name}
-              onChange={handleChange}
-              required
-              placeholder="Введите название мероприятия"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="date">Дата и время</label>
-            <input
-              type="datetime-local"
-              id="date"
-              name="date"
-              value={formData?.date}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="place">Место</label>
-            <input
-              type="text"
-              id="place"
-              name="place"
-              value={formData?.place}
-              onChange={handleChange}
-              placeholder="Укажите место проведения"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="budget">Бюджет (руб.)</label>
-            <input
-              type="number"
-              id="budget"
-              name="budget"
-              value={formData?.budget}
-              onChange={handleChange}
-              placeholder="Укажите бюджет мероприятия"
-              min="0"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="comment">Примечание</label>
-            <textarea
-              id="comment"
-              name="comment"
-              value={formData?.comment}
-              onChange={handleChange}
-              placeholder="Дополнительная информация"
-              rows={3}
-            ></textarea>
-          </div>
-
-          <div className="form-actions">
-            <button type="submit" className="button">
-              Создать мероприятие
-            </button>
-          </div>
-        </form>
-      )}
-    </div>
+        ) : (
+            <EventForm initialData={null} onSubmit={handleSubmit} />
+        )}
+      </div>
   );
 };
 
-export default CreateEvent; 
+export default CreateEvent;

@@ -3,6 +3,7 @@ import { UUID } from "node:crypto";
 import baseApi from "../../api/client";
 import EventEntity from "../../model/EventEntity";
 import ApiErrorResponse from "../../model/ApiErrorResponse";
+import EventFormData from "../../model/EventFormData";
 
 /**
  * Получение мероприятий пользователя
@@ -13,6 +14,9 @@ export async function getEvents(userId: number): Promise<EventEntity[]> {
     return baseApi.get(`/company-events/users/${userId}/events`)
         .then(response => response.data)
         .catch(error => {
+            if (error.response?.status === 404) {
+                return [];
+            }
             console.error("Error fetching events:", error);
             throw error;
         });
@@ -69,16 +73,35 @@ export async function deleteEvent(eventId: UUID): Promise<void> {
 
 /**
  * Обновление мероприятия
- * @param userId ID пользователя Telegram
  * @param eventId UUID мероприятия
  * @param eventData Новые данные мероприятия
  * @returns {Promise<EventEntity>}
  */
-export async function updateEvent(userId: number, eventId: UUID, eventData: EventEntity): Promise<EventEntity> {
-    return baseApi.put(`/company-events/users/${userId}/events/${eventId}`, eventData)
+export async function updateEvent(eventId: UUID, eventData: EventEntity): Promise<EventEntity> {
+    const eventUpdateDto: EventFormData = {
+        name: eventData.name,
+        date: new Date(eventData.date).toISOString().replace(/\.\d{3}Z$/, 'Z'),
+        place: eventData.place,
+        budget: eventData.budget,
+        organizerCardInfo: eventData.organizerCardInfo,
+        comment: eventData.comment
+    };
+
+    return baseApi.patch(`/company-events/events/${eventId}`, eventUpdateDto)
         .then(response => response.data)
         .catch(error => {
             console.error("Error updating event:", error);
             throw error;
         });
 }
+
+/**
+ * Генерирует реферальную ссылку-приглашение для мероприятия в Telegram боте
+ * @param {number} userId - Telegram ID пользователя
+ * @param {UUID} eventId - UUID мероприятия
+ * @returns {Promise<string>} Promise, который разрешается в Telegram-ссылку вида https://t.me/CompanyEventsBot?start={refCode}
+ */
+export const getEventInviteLink = async (userId: number, eventId: UUID): Promise<string> => {
+    const eventRefCode = (await getEventById(userId, eventId)).eventRefCode;
+    return `https://t.me/CompanyEventsBot?start=${eventRefCode}`;
+};

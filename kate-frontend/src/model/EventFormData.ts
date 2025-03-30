@@ -6,6 +6,7 @@ interface EventFormData {
     place?: string,
     budget?: number,
     comment?: string,
+    organizerCardInfo?: string,
 }
 
 export default EventFormData;

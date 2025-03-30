@@ -1,59 +1,70 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
 import Header from '../../common/Header';
-import { addPurchase, updatePurchase } from '../../../services/eventService';
 import './AddPurchase.css';
 import {UUID} from "node:crypto";
-import PurchaseFormData from "../../../model/PurchaseFormData";
-import Purchase, {CompletionStatus, FundraisingStatus} from "../../../model/Purchase";
+import ProcurementFormData from "../../../model/ProcurementFormData";
+import Procurement, {CompletionStatus, FundraisingStatus} from "../../../model/Procurement";
 import {v4} from "uuid";
 import {useTelegramAuth} from "../../../context/TelegramAuthContext";
-import {getEventById} from "../../../api/endpoints/eventEndpoints";
+import {addProcurement, getProcurementById, updateProcurement} from "../../../api/endpoints/procurementEndpoints";
+import {getEventParticipants} from "../../../api/endpoints/participantsEndpoints";
+import Participant from "../../../model/Participant";
+import {Box, Chip, MenuItem, OutlinedInput, Select} from "@mui/material";
 
 const AddPurchase = () => {
-  const { eventIdString, purchaseIdString } = useParams();
-  const eventId = eventIdString as UUID;
-  const purchaseId = purchaseIdString as UUID;
+  const eventId: UUID = (useParams()).eventId as UUID;
+  const purchaseId: UUID = (useParams()).purchaseId as UUID;
   const { user } = useTelegramAuth();
   const navigate = useNavigate();
-  const [event, setEvent] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<PurchaseFormData>();
-  const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState<ProcurementFormData>();
+  const [loading, setLoading] = useState(false);
+  const [currentUserAsParticipant, setCurrentUserAsParticipant] = useState<Participant>();
+  const [participants, setParticipants] = useState<Participant[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
-      const eventData = await getEventById(user.id, eventId);
-      if (eventData) {
-        setEvent(eventData);
+      setLoading(true);
+      const eventParticipants = (await getEventParticipants(eventId));
+      setParticipants(eventParticipants as Participant[]);
+      const participant = (eventParticipants as Participant[]).find(e => e.tgUserId === user.id);
+      setCurrentUserAsParticipant(participant);
 
-        // Если это редактирование, загружаем данные покупки
-        if (purchaseId) {
-          const purchase = eventData.purchases.find(p => p.id === purchaseId);
-          if (purchase) {
-            setFormData({
-              name: purchase.name,
-              price: purchase.price, // int
-              comment: purchase.comment,
-              completionStatus: purchase.completionStatus,
-              contributors: purchase.contributors, // List<Participant>
-              fundraisingStatus: purchase.fundraisingStatus,
-            });
-            setIsEditing(true);
-          } else {
-            // Если покупка не найдена, перенаправляем обратно
-            navigate(`/event/${eventId}`);
-          }
+      // Если это редактирование, загружаем данные покупки
+      if (purchaseId) {
+        const purchase = await getProcurementById(purchaseId);
+        if (purchase) {
+          setFormData({
+            name: purchase.name,
+            price: purchase.price,
+            comment: purchase.comment,
+            completionStatus: purchase.completionStatus,
+            contributors: purchase.contributors,
+            fundraisingStatus: purchase.fundraisingStatus,
+            responsibleId: purchase.responsibleId || currentUserAsParticipant?.id,
+          });
+          setIsEditing(true);
+        } else {
+          // Если покупка не найдена, перенаправляем обратно
+          navigate(`/event/${eventId}`);
         }
-      } else {
-        // Если мероприятие не найдено, перенаправляем на главную
-        navigate('/');
+      }
+      else {
+        setFormData({
+          name: '',
+          price: 0,
+          comment: '',
+          completionStatus: CompletionStatus.IN_PROGRESS,
+          contributors: [],
+          fundraisingStatus: FundraisingStatus.NONE,
+        });
       }
       setLoading(false);
     };
 
     loadData();
-  }, [eventId, purchaseId, navigate]);
+  }, [eventId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -63,24 +74,29 @@ const AddPurchase = () => {
     }));
   };
 
+  const getParticipantNameById = (id: UUID): string => {
+    const participant = participants.find(p => p.id === id);
+    return participant?.name;
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    const purchaseData: Purchase = {
-      id: v4() as UUID, // uuid
+
+    const purchaseData: Procurement = {
+      id: v4() as UUID,
       name: formData.name,
-      price: formData.price,// int
+      price: formData.price,
       comment: formData.comment,
-      responsible: v4() as UUID, // uuid of responsible person
+      responsibleId: formData.responsibleId,
       completionStatus: formData.completionStatus,
-      contributors: [], // List<Participant> // TODO: Implement
+      contributors: formData.contributors,
       fundraisingStatus: formData.fundraisingStatus
     };
-    
+    console.log(purchaseData);
     if (isEditing) {
-      await updatePurchase(user.id, eventId, purchaseId, purchaseData);
+      await updateProcurement(eventId, purchaseId, purchaseData);
     } else {
-      await addPurchase(user.id, eventId, purchaseData);
+      await addProcurement(eventId, purchaseData);
     }
     
     navigate(`/event/${eventId}`);
@@ -90,21 +106,23 @@ const AddPurchase = () => {
     return <div className="loading">Загрузка...</div>;
   }
 
+  // TODO: УДАЛИТЬ
+  console.log("Текущее состояние formData:", formData);
+
   return (
     <div className="add-purchase-container">
       <Header 
         title={isEditing ? "Редактирование закупки" : "Добавление закупки"} 
         showBackButton={true} 
       />
-
       <form className="purchase-form" onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="title">Название</label>
+          <label htmlFor="name">Название</label>
           <input
             type="text"
-            id="title"
-            name="title"
-            value={formData.name}
+            id="name"
+            name="name"
+            value={formData?.name}
             onChange={handleChange}
             required
             placeholder="Название покупки"
@@ -112,97 +130,102 @@ const AddPurchase = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="cost">Стоимость (руб.)</label>
+          <label htmlFor="price">Стоимость (руб.)</label>
           <input
             type="number"
-            id="cost"
-            name="cost"
-            value={formData.price}
+            id="price"
+            name="price"
+            value={formData?.price}
             onChange={handleChange}
             placeholder="Стоимость"
             min="0"
           />
         </div>
 
-        {/*<div className="form-group">*/}
-        {/*  <label htmlFor="responsible">Ответственный</label>*/}
-        {/*  <select*/}
-        {/*    id="responsible"*/}
-        {/*    name="responsible"*/}
-        {/*    value={formData.responsible}*/}
-        {/*    onChange={handleChange}*/}
-        {/*  >*/}
-        {/*    <option value="currentUser">Вы</option>*/}
-        {/*    {event.participants.filter(p => p !== 'currentUser').map(participant => (*/}
-        {/*      <option key={participant} value={participant}>*/}
-        {/*        {`Участник ${participant.substring(0, 5)}`}*/}
-        {/*      </option>*/}
-        {/*    ))}*/}
-        {/*  </select>*/}
-        {/*</div>*/}
+        <div className="form-group">
+          <label htmlFor="responsibleId">Ответственный</label>
+          <Select
+              id="responsibleId"
+              name="responsibleId"
+              value={formData?.responsibleId}
+              onChange={handleChange}
+              input={<OutlinedInput label="Ответственный" />}
+          >
+            {participants.map(participant => (
+                <MenuItem key={participant.id} value={participant.id}>
+                  {participant.id === currentUserAsParticipant?.id ? 'Вы' : participant.name}
+                </MenuItem>
+            ))}
+          </Select>
+        </div>
 
         <div className="form-group">
           <label htmlFor="contributors">Кто скидывается</label>
-          <select
+          <Select
             id="contributors"
             name="contributors"
-            value={formData.contributors}
+            value={formData?.contributors}
             onChange={handleChange}
+            input={<OutlinedInput label="Кто скидывается" />}
+            multiple
+            renderValue={(selected) => (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {selected.map((value) => (
+                      <Chip
+                          key={value}
+                          label={getParticipantNameById(value)}
+                      />
+                  ))}
+                </Box>
+            )}
           >
-            <option value="all">Все участники</option>
-            <option value="currentUser">Только вы</option>
-            {/* В реальном приложении здесь можно было бы добавить возможность выбора конкретных участников */}
-          </select>
+            {currentUserAsParticipant &&
+              <MenuItem key={currentUserAsParticipant.id} value={currentUserAsParticipant.id}>Вы</MenuItem>
+            }
+
+            {
+              participants.filter(p => p.id !== currentUserAsParticipant.id).map(participant => (
+              <MenuItem key={participant.id} value={participant.id}>
+                {`${participant.name}`}
+              </MenuItem >
+              ))
+            }
+          </Select>
         </div>
 
-        {/*<div className="form-group">*/}
-        {/*  <label htmlFor="collection">Сбор средств</label>*/}
-        {/*  <select*/}
-        {/*    id="collection"*/}
-        {/*    name="collection"*/}
-        {/*    value={formData.collection}*/}
-        {/*    onChange={handleChange}*/}
-        {/*  >*/}
-        {/*    <option value="">Не требуется</option>*/}
-        {/*    <option value="planned">Планируется</option>*/}
-        {/*  </select>*/}
-        {/*</div>*/}
-
         <div className="form-group">
-          <label htmlFor="status">Статус закупки</label>
+          <label htmlFor="completionStatus">Статус закупки</label>
           <select
-            id="status"
-            name="status"
-            value={formData.completionStatus}
+            id="completionStatus"
+            name="completionStatus"
+            value={formData?.completionStatus}
             onChange={handleChange}
           >
-            <option value="NOT_STARTED">Не начато</option>
             <option value="IN_PROGRESS">В процессе</option>
-            <option value="COMPLETED">Выполнено</option>
+            <option value="DONE">Выполнено</option>
           </select>
         </div>
 
         <div className="form-group">
-          <label htmlFor="status">Статус сбора средств</label>
+          <label htmlFor="fundraisingStatus">Статус сбора средств</label>
           <select
-              id="status"
-              name="status"
-              value={formData.fundraisingStatus}
+              id="fundraisingStatus"
+              name="fundraisingStatus"
+              value={formData?.fundraisingStatus}
               onChange={handleChange}
           >
-            <option value="NOT_STARTED">Не начато</option>
-            <option value="IN_PROGRESS">В процессе</option>
-            <option value="FUNDED">Собрано</option>
-            <option value="FAILED">Не собрали</option>
+            <option value="NONE">Не планируется</option>
+            <option value="PLANNING">Планируется</option>
+            <option value="DONE">Собрано</option>
           </select>
         </div>
 
         <div className="form-group">
-          <label htmlFor="note">Примечание</label>
+          <label htmlFor="comment">Примечание</label>
           <textarea
-            id="note"
-            name="note"
-            value={formData.comment}
+            id="comment"
+            name="comment"
+            value={formData?.comment}
             onChange={handleChange}
             placeholder="Дополнительная информация"
             rows={3}

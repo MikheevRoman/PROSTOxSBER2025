@@ -1,6 +1,9 @@
+import {UUID} from "node:crypto";
+
 interface Participant {
-    id: string;
+    id: UUID;
     name?: string;
+    hasPayment?: boolean;
     tgUserId?: number;
     createdAt?: string;
 }
