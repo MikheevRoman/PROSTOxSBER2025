@@ -1,23 +1,28 @@
 import React from 'react';
+import {
+    sendNotificationToParticipant,
+    sendNotificationToUser
+} from "../../../../../api/endpoints/notificationEndpoints";
 
 const ExpenseTable = ({ participantSummary, onPaymentStatusChange }) => {
 
-    // TODO: Сообщение берётся из участника мероприятия
     const copyMessageToClipboard = (participant) => {
-        // if (!participant || !savedTemplate) return;
-        // const amount = Math.abs(participant.totalAmount || 0).toFixed(2);
-        // const message = savedTemplate.replace('{amount}', amount).replace('{eventTitle}', event.title);
-        // navigator.clipboard.writeText(message)
-        //     .then(() => alert('Сообщение скопировано в буфер обмена'))
-        //     .catch(err => console.error('Ошибка копирования: ', err));
+        if (!participant || !participant.notificationMessage) return;
+        navigator.clipboard.writeText(participant.notificationMessage)
+            .then(() => alert('Сообщение скопировано в буфер обмена'))
+            .catch(err => console.error('Ошибка копирования: ', err));
     };
 
-    // TODO: Сообщение берётся из участника мероприятия
-    const sendMessageToTelegram = (participant) => {
-        // if (!participant || !savedTemplate) return;
-        // const amount = Math.abs(participant.diff).toFixed(2);
-        // const message = encodeURIComponent(savedTemplate.replace('{amount}', amount).replace('{eventTitle}', event.title));
-        // window.open(`https://t.me/share/url?url=${message}`, '_blank');
+
+    const sendMessageToTelegram = async (participant) => {
+        if (!participant || !participant.notificationMessage || !participant.participantId) return;
+        try {
+            await sendNotificationToParticipant(participant.participantId, participant.notificationMessage);
+            alert("Сообщение отправлено через бота!");
+        } catch (error) {
+            alert("Ошибка при отправке сообщения!");
+            console.error(error);
+        }
     };
 
     // TODO: Должны меняться статусы, если участник уже оплатил перевод, при нажатии на чекбокс.

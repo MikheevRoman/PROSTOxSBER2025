@@ -183,7 +183,6 @@ const PurchasesTab = (props: PurchasesProps) => {
   };
 
   const getContributorsText = (contributors: UUID[]): string => {
-    console.log('contributors: ', contributors);
     if (!contributors || contributors.length === 0) {
       return 'Нет ответственных';
     }

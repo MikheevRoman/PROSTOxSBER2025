@@ -59,7 +59,6 @@ const EventDetails = () => {
         const eventData = await getEventById(user.id, eventId);
         if (eventData) {
           setEvent(eventData);
-          console.log('Запрос участника:', user.id, eventId);
           fetchParticipantId();
         } else {
           navigate('/');
