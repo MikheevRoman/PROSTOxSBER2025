@@ -37,7 +37,7 @@ export async function addProcurement(eventId: UUID, procurement: Procurement): P
 }
 
 export async function updateProcurement(eventId: UUID, procurementId: UUID, procurement: Procurement, participantId: UUID): Promise<Procurement> {
-    return await baseApi.patch(`company-events/events/${eventId}/procurements/${procurementId}?${participantId}`, procurement)
+    return await baseApi.patch(`company-events/events/${eventId}/procurements/${procurementId}?participantId=${participantId}`, procurement)
         .then(response => response.data)
         .catch(error => {
             console.error("Error updating procurement:", error);
