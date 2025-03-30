@@ -19,4 +19,5 @@ public interface ParticipantService {
     List<ParticipantView> toView(List<Participant> participants);
     ParticipantView findByUserAndEvent(Long tgUserId, UUID eventId);
     ParticipantView update(UUID id, ParticipantUpdateDto updateDto);
+    void delete(UUID id);
 }

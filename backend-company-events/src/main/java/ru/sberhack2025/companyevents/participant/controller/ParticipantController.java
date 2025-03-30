@@ -63,4 +63,14 @@ public class ParticipantController {
     public ParticipantView update(@PathVariable UUID id, @Validated @RequestBody final ParticipantUpdateDto updateDto) {
         return participantService.update(id, updateDto);
     }
+
+    @Operation(
+            summary = "Удалить мероприятие по id",
+            description = "Ничего не возвращает, только код 204"
+    )
+    @DeleteMapping("participants/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteById(@PathVariable UUID id) {
+        participantService.delete(id);
+    }
 }

@@ -20,6 +20,7 @@ import ru.sberhack2025.companyevents.user.model.User;
 import ru.sberhack2025.companyevents.user.repository.UserRepository;
 import ru.sberhack2025.companyevents.user.service.UserServiceImpl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -89,6 +90,29 @@ public class ParticipantServiceImpl implements ParticipantService {
         Participant participant = repository.find(id);
         return toView(mapper.update(updateDto, participant));
     }
+
+    @Override
+    @Transactional
+    public void delete(UUID id) {
+        Participant participant = repository.find(id);
+        Event event = participant.getEvent();
+        User user = participant.getUser();
+        Participant organizer = event.getOrganizer();
+        // при удалении участника все штуки, за которые он был ответственен переходят на организатора
+        new ArrayList<>(participant.getContributedProcurements())
+                .forEach(p -> p.removeContributor(participant));
+        participant.getResponsibleProcurements().forEach(p -> {
+            p.setResponsible(organizer);
+            organizer.addResponsibleProcurement(p);
+        });
+
+        participant.getResponsibleProcurements().clear();
+        event.removeParticipant(participant);
+        user.removeParticipations(participant);
+        log.debug("delete: {}", participant);
+        repository.delete(participant);
+    }
+
 
 
     public ParticipantView toView(Participant participant) {
