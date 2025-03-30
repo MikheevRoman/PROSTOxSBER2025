@@ -9,7 +9,7 @@ import {deleteEvent, getEvents} from "../../../api/endpoints/eventEndpoints";
 
 const EventList = () => {
   const [events, setEvents] = useState<EventEntity[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user } = useTelegramAuth();
@@ -21,7 +21,7 @@ const EventList = () => {
       return;
     }
 
-    setLoading(true);
+    // setLoading(true);
     setError(null);
 
     let eventsList: EventEntity[] = [];
