@@ -58,4 +58,28 @@ public interface ProcurementMapper extends DefaultMapper<Procurement, Procuremen
         }
     }
 
+    default String toCompareTelegramMessage(Procurement oldProcurement, Procurement newProcurement) {
+        return String.join("\n",
+                "Закупка под твоей ответственностью, была изменена.\n",
+                "Было:",
+                toTelegramMessage(oldProcurement),
+                "\nСтало:",
+                toTelegramMessage(newProcurement)
+                );
+    }
+
+    default String toTelegramMessage(Procurement view) {
+        return String.join("\n",
+                formatField("Название", view.getName()),
+                formatField("Цена", view.getPrice() != null ? view.getPrice().toPlainString() : null),
+                formatField("Комментарий", view.getComment()),
+                formatField("Статус выполнения", view.getCompletionStatus() != null ? view.getCompletionStatus().getDisplayName() : null),
+                formatField("Статус сбора средств", view.getFundraisingStatus() != null ? view.getFundraisingStatus().getDisplayName() : null)
+        );
+    }
+
+    private String formatField(String label, String value) {
+        return label + ": " + (value != null ? value : "<не заполнено>");
+    }
+
 }

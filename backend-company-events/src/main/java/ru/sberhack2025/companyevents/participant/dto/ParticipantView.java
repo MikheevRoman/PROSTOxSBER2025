@@ -35,5 +35,4 @@ public class ParticipantView implements DateFormatter {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = INSTANT_PATTERN, timezone = "UTC")
     Instant createdAt;
 
-
 }

@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.sberhack2025.companyevents.core.service.DefaultServiceImpl;
 import ru.sberhack2025.companyevents.event.model.Event;
 import ru.sberhack2025.companyevents.event.repository.EventRepository;
+import ru.sberhack2025.companyevents.notification.dto.NotificationDto;
+import ru.sberhack2025.companyevents.notification.service.NotificationServiceImpl;
 import ru.sberhack2025.companyevents.participant.model.Participant;
 import ru.sberhack2025.companyevents.participant.repository.ParticipantRepository;
 import ru.sberhack2025.companyevents.participant.service.ParticipantService;
@@ -39,28 +41,39 @@ public class ProcurementServiceImpl extends DefaultServiceImpl<
     private final ParticipantRepository participantRepository;
     private final ParticipantService participantService;
     private final EventRepository eventRepository;
+    private final NotificationServiceImpl notificationService;
 
     public ProcurementServiceImpl(
             @Qualifier("procurementRepository") ProcurementRepository procurementRepository,
             ProcurementMapper procurementMapper,
             ParticipantRepository participantRepository,
             ParticipantService participantService,
-            EventRepository eventRepository) {
+            EventRepository eventRepository,
+            NotificationServiceImpl notificationService) {
         super(procurementRepository, procurementMapper);
         this.participantRepository = participantRepository;
         this.participantService = participantService;
         this.eventRepository = eventRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
     @Transactional
     public ProcurementView update(UUID id, ProcurementUpdateDto updateDto) {
         Procurement procurement = repository.find(id);
-        mapper.update(updateDto, procurement);
+        Procurement updated = mapper.update(updateDto, procurement);
+        UUID responsibleId = procurement.getResponsible().getId();
+
+        //  если кто-то поменял закупку, то ответственного за нее уведомляем
+        if (updateDto.getActionParticipant() != null && !updateDto.getActionParticipant().equals(responsibleId)) {
+            NotificationDto notification = NotificationDto.builder()
+                    .messageText(mapper.toCompareTelegramMessage(procurement, updated))
+                    .build();
+            notificationService.sendNotificationToParticipant(responsibleId, notification);
+        }
 
         // обновляем контрибьютеров
         if (updateDto.getContributors() != null) {
-
             // список удаленных контрибьютеров
             List<Participant> newContributors = participantRepository.findAllById(updateDto.getContributors());
             List<Participant> removedContributors = new ArrayList<>(procurement.getContributors());
@@ -80,10 +93,30 @@ public class ProcurementServiceImpl extends DefaultServiceImpl<
         // обновляем ответственного
         if (updateDto.getResponsibleId() != null) {
             Participant newResponsible = participantRepository.find(updateDto.getResponsibleId());
+            Participant oldResponsible = procurement.getResponsible();
             procurement.setResponsible(newResponsible);
+            Event event = procurement.getEvent();
+
+            // отправляем уведомление новому ответственному
+            if (!event.getOrganizer().equals(newResponsible)) {
+                String assignMessage = String.format("На вас назначили закупку: «%s», цена: %s ₽", procurement.getName(), procurement.getPrice().toString());
+                NotificationDto assignNotification = NotificationDto.builder()
+                        .messageText(assignMessage)
+                        .build();
+                notificationService.sendNotificationToParticipant(newResponsible.getId(), assignNotification);
+            }
+
+            // отправляем уведомление старому ответственному
+            if (!event.getOrganizer().equals(oldResponsible)) {
+                String unassignMessage = String.format("С вас сняли закупку: «%s»", procurement.getName());
+                NotificationDto unassignNotification = NotificationDto.builder()
+                        .messageText(unassignMessage)
+                        .build();
+                notificationService.sendNotificationToParticipant(oldResponsible.getId(), unassignNotification);
+            }
         }
 
-        return toView(procurement);
+        return toView(updated);
 
     }
 
