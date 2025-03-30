@@ -64,15 +64,15 @@ export const useTelegram = () => {
                 }
 
                 // 2. Проверяем наличие Telegram WebApp
-                if (!window.Telegram?.WebApp) {
-                    console.warn('Telegram WebApp not available');
-                    setTg({
-                        ready: () => {},
-                        expand: () => {},
-                    });
-                    setIsLoading(false);
-                    return;
-                }
+                // if (!window.Telegram?.WebApp) {
+                //     console.warn('Telegram WebApp not available');
+                //     setTg({
+                //         ready: () => {},
+                //         expand: () => {},
+                //     });
+                //     setIsLoading(false);
+                //     return;
+                // }
 
                 const webApp = window.Telegram.WebApp;
 
@@ -97,15 +97,15 @@ export const useTelegram = () => {
                     setIsLoading(false);
 
                     // Раскрываем WebApp на весь экран
-                    webApp.expand();
+                    webApp?.expand();
                 };
 
                 // Проверяем, доступен ли onEvent
-                if (webApp.onEvent) {
-                    webApp.onEvent('webAppReady', handleReady);
+                if (webApp?.onEvent) {
+                    webApp?.onEvent('webAppReady', handleReady);
                 } else {
                     // Если onEvent недоступен, используем ready()
-                    webApp.ready();
+                    webApp?.ready();
                     handleReady();
                 }
 
