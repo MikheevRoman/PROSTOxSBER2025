@@ -36,15 +36,15 @@ export const TelegramAuthProvider: React.FC<{ children: ReactNode }> = ({ childr
 
     useEffect(() => {
         // Для разработки - можно установить мок через localStorage
-        if (!(tg?.initDataUnsafe?.user) && process.env.NODE_ENV === 'development') {
-            const mockUser = localStorage.getItem('debug:telegram_user');
-            if (mockUser) {
-                const parsedMockUser = JSON.parse(mockUser);
-                setUser(parsedMockUser);
-                localStorage.setItem("telegram_user", JSON.stringify(parsedMockUser)); // <-- Добавляем запись
-                return;
-            }
-        }
+        // if (!(tg?.initDataUnsafe?.user) && process.env.NODE_ENV === 'development') {
+        //     const mockUser = localStorage.getItem('debug:telegram_user');
+        //     if (mockUser) {
+        //         const parsedMockUser = JSON.parse(mockUser);
+        //         setUser(parsedMockUser);
+        //         localStorage.setItem("telegram_user", JSON.stringify(parsedMockUser)); // <-- Добавляем запись
+        //         return;
+        //     }
+        // }
 
         if (tg?.initDataUnsafe?.user) {
             console.log('Telegram user:', tg.initDataUnsafe.user);
