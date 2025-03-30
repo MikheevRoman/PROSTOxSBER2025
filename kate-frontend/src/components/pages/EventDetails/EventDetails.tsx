@@ -99,7 +99,7 @@ const EventDetails = () => {
     const tabs = [
       { id: 'purchases', label: 'Закупки' },
       { id: 'contributions', label: 'Мои взносы' },
-      { id: 'tasks', label: 'Мои задачи' },
+      { id: 'tasks', label: 'Задачи' },
       { id: 'participants', label: 'Участники' },
     ];
     // Вкладка "Итоги" доступна только организатору
