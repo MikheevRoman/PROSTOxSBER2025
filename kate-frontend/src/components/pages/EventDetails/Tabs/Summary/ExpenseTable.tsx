@@ -56,7 +56,7 @@ const ExpenseTable = ({ participantSummary, onPaymentStatusChange, currentPartic
                             <td>{(participant.owedAmount || 0).toFixed(2)} руб.</td>
                             <td>{(participant.totalAmount || 0).toFixed(2)} руб.</td>
                             <td>
-                                {participant.totalAmount <= 0 && participant.participantId !== currentParticipantId && (
+                                {participant.totalAmount > 0 && participant.participantId !== currentParticipantId && (
                                     <div className="transfer-actions">
                                         <button className="button secondary" onClick={() => copyMessageToClipboard(participant)}>Копировать</button>
                                         <button className="button secondary" onClick={() => sendMessageToTelegram(participant)}>Telegram</button>
