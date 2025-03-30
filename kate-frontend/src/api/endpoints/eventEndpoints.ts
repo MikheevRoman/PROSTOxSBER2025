@@ -14,6 +14,9 @@ export async function getEvents(userId: number): Promise<EventEntity[]> {
     return baseApi.get(`/company-events/users/${userId}/events`)
         .then(response => response.data)
         .catch(error => {
+            if (error.response?.status === 404) {
+                return [];
+            }
             console.error("Error fetching events:", error);
             throw error;
         });
