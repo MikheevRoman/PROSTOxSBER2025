@@ -1,5 +1,6 @@
 import React, {ChangeEvent, FormEvent, useState} from "react";
 import EventFormData from "../../model/EventFormData";
+import YandexSuggestInput from "../common/YandexSuggestInput";
 
 interface EventFormProps {
     initialData?: Partial<EventFormData>;
@@ -28,6 +29,13 @@ export const EventForm: React.FC<EventFormProps> = (props: EventFormProps) => {
         setFormData(prevData => ({
             ...prevData,
             [name]: value
+        }));
+    };
+
+    const handlePlaceChange = (value: string) => {
+        setFormData(prevData => ({
+            ...prevData,
+            place: value
         }));
     };
 
@@ -62,15 +70,23 @@ export const EventForm: React.FC<EventFormProps> = (props: EventFormProps) => {
                 />
             </div>
 
+            {/*<div className="form-group">*/}
+            {/*    <label htmlFor="place">Место</label>*/}
+            {/*    <input*/}
+            {/*        type="text"*/}
+            {/*        id="place"*/}
+            {/*        name="place"*/}
+            {/*        value={formData?.place}*/}
+            {/*        onChange={handleChange}*/}
+            {/*        placeholder="Укажите место проведения"*/}
+            {/*    />*/}
+            {/*</div>*/}
+
             <div className="form-group">
                 <label htmlFor="place">Место</label>
-                <input
-                    type="text"
-                    id="place"
-                    name="place"
+                <YandexSuggestInput
                     value={formData?.place}
-                    onChange={handleChange}
-                    placeholder="Укажите место проведения"
+                    onChange={handlePlaceChange}
                 />
             </div>
 
