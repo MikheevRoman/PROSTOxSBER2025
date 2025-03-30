@@ -157,7 +157,7 @@ const EventDetails = () => {
               <span className="event-label">Место:</span> {event.place}
             </p>
           )}
-          {event.budget && (
+          {event.budget > 0 && (
             <p className="event-budget">
               <span className="event-label">Бюджет:</span> {event.budget} руб.
             </p>
