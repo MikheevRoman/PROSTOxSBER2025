@@ -45,7 +45,7 @@ public class ProcurementController {
             description = "Возвращает все закупки мероприятия"
     )
     @PatchMapping("events/{eventId}/procurements/{id}")
-    public List<ProcurementView> update(@PathVariable UUID eventId, @PathVariable UUID id, @Validated @RequestBody final ProcurementUpdateDto updateDto, @RequestParam("participantId") UUID participantId) {
+    public List<ProcurementView> update(@PathVariable UUID eventId, @PathVariable UUID id, @Validated @RequestBody final ProcurementUpdateDto updateDto, @RequestParam(value = "participantId", required = false) UUID participantId) {
         updateDto.setActionParticipant(participantId);
         updateDto.setEventId(eventId);
         return procurementService.updateAndGetAll(id, updateDto);
