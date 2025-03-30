@@ -199,7 +199,7 @@ const PurchasesTab = (props: PurchasesProps) => {
 
   const getContributorsText = (contributors: UUID[]): string => {
     if (!contributors || contributors.length === 0) {
-      return 'Никто не скидывается';
+      return 'Все';
     }
 
     return contributors.map(id => getParticipantNameById(id)).join(', ');
