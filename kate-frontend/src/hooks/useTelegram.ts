@@ -30,6 +30,8 @@ export const useTelegram = () => {
     useEffect(() => {
         const initTelegram = () => {
             try {
+                localStorage.clear();
+
                 // if (process.env.NODE_ENV === 'development' &&
                 //     process.env.REACT_APP_ENABLE_TELEGRAM_MOCK === 'true') {
                 //
