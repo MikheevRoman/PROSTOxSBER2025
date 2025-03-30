@@ -1,11 +1,14 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import { useParams } from 'react-router-dom';
-import { removeParticipant, assignNewOrganizer } from '../../../../services/eventService';
 import './TabStyles.css';
 import {UUID} from "node:crypto";
 import { useTelegramAuth } from "../../../../context/TelegramAuthContext";
 import Participant from "../../../../model/Participant";
-import { getEventParticipants } from "../../../../api/endpoints/participantsEndpoints";
+import {
+  changeEventOrganizer,
+  deleteParticipantById,
+  getEventParticipants
+} from "../../../../api/endpoints/participantsEndpoints";
 import ApiErrorResponse from "../../../../model/ApiErrorResponse";
 import EventEntity from "../../../../model/EventEntity";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
@@ -39,25 +42,17 @@ const ParticipantsTab = ({event}: ParticipantItemProps) => {
 
   const isCurrentUserOrganizer = () => event.organizerTgUserId === user.id;
 
-  const handleRemoveParticipant = async (participantId) => {
+  const handleRemoveParticipant = async (participantId: UUID) => {
     if (window.confirm('Вы уверены, что хотите удалить этого участника?')) {
-      const success = await removeParticipant(user.id, eventId, participantId);
-      if (success) {
-        setParticipants(prevParticipants =>
-            prevParticipants.filter(p => p !== participantId)
-        );
-      }
+      await deleteParticipantById(participantId);
+      await loadParticipants();
     }
   };
 
-  const handleAssignOrganizer = async (participantId) => {
+  const handleAssignOrganizer = async (participantTgId: number) => {
     if (window.confirm('Назначить этого участника организатором? Вы останетесь участником, но потеряете права организатора.')) {
-      const success = await assignNewOrganizer(user.id, eventId, participantId);
-      if (success) {
-        // Обновление состояния на клиенте
-        // В реальном приложении здесь будет перезагрузка данных мероприятия
-        window.location.reload();
-      }
+      await changeEventOrganizer(user.id, eventId, participantTgId);
+      window.location.reload();
     }
   };
 
@@ -95,7 +90,7 @@ const ParticipantsTab = ({event}: ParticipantItemProps) => {
                               <Button
                                   variant="contained"
                                   color="warning"
-                                  onClick={() => handleAssignOrganizer(participant.id)}
+                                  onClick={() => handleAssignOrganizer(participant.tgUserId)}
                               >
                                 Назначить организатором
                               </Button>

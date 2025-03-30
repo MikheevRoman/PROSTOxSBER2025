@@ -1,6 +1,8 @@
 import baseApi from "../../api/client";
 import ApiErrorResponse from "../../model/ApiErrorResponse";
 import Participant from "../../model/Participant";
+import {UUID} from "node:crypto";
+import {getEventById} from "./eventEndpoints";
 
 /**
  * Добавление участника мероприятия
@@ -63,5 +65,20 @@ export async function updateParticipantById(
       });
 }
 
+export async function deleteParticipantById(participantId: UUID): Promise<void> {
+    return baseApi.delete(`/company-events/participants/${participantId}`);
+}
+
+export async function changeEventOrganizer(userId: number, eventId: UUID, newOrganizerId: number): Promise<Participant | ApiErrorResponse> {
+    let event = await getEventById(userId, eventId);
+    event.organizerTgUserId = newOrganizerId;
+
+    return baseApi.patch(`/company-events/events/${eventId}`, event)
+        .then(response => response.data)
+        .catch(error => {
+            console.error("Error changing event organizer:", error);
+            return error.response?.data as ApiErrorResponse || { error: "Unknown error" };
+        });
+}
 
 
