@@ -55,6 +55,7 @@ public class CostResultServiceImpl implements CostResultService {
                 .owedAmount(owedAmount)
                 .totalAmount(totalAmount)
                 .notificationMessage(message)
+                .hasPayment(participant.getHasPayment())
                 .build();
     }
 
