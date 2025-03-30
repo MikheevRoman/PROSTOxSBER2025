@@ -9,7 +9,7 @@ import { UUID } from "node:crypto";
 import Participant from "../../../../model/Participant";
 import EventEntity from "../../../../model/EventEntity";
 import TelegramUser from "../../../../model/TelegramUser";
-import {updateParticipantById} from "../../../../api/endpoints/participantsEndpoints";
+import {getParticipantByUserIdAndEventId, updateParticipantById} from "../../../../api/endpoints/participantsEndpoints";
 
 interface ParticipantItemProps {
   event: EventEntity;
@@ -21,6 +21,8 @@ const SummaryTab = (event: ParticipantItemProps) => {
   const [participantSummary, setParticipantSummary] = useState([]);
   const [calculationDone, setCalculationDone] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [organizerParticipantId, setOrganizerParticipantId] = useState<string | null>(null);
+
 
   useEffect(() => {
     if (eventId) {
@@ -38,6 +40,20 @@ const SummaryTab = (event: ParticipantItemProps) => {
       setPaymentDetails(event.event.organizerCardInfo);
     }
   }, [event.event?.organizerCardInfo]);
+
+  useEffect(() => {
+    if (eventId && event.event.organizerTgUserId) {
+      getParticipantByUserIdAndEventId(event.event.organizerTgUserId, eventId)
+          .then(participantId => {
+            if (typeof participantId === "string") {
+              setOrganizerParticipantId(participantId);
+            } else {
+              console.error("Ошибка получения participantId:", participantId);
+            }
+          })
+          .catch(error => console.error("Ошибка при загрузке participantId:", error));
+    }
+  }, [eventId, event.event.organizerTgUserId]);
 
   const handleUpdateEvent = async () => {
     if (paymentDetails !== event.event.organizerCardInfo) {
@@ -96,6 +112,7 @@ const SummaryTab = (event: ParticipantItemProps) => {
             <ExpenseTable
                 participantSummary={participantSummary}
                 onPaymentStatusChange={handlePaymentStatusChange}
+                currentParticipantId={organizerParticipantId}
             />
         )}
 

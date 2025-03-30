@@ -4,7 +4,7 @@ import {
     sendNotificationToUser
 } from "../../../../../api/endpoints/notificationEndpoints";
 
-const ExpenseTable = ({ participantSummary, onPaymentStatusChange }) => {
+const ExpenseTable = ({ participantSummary, onPaymentStatusChange, currentParticipantId }) => {
 
     const copyMessageToClipboard = (participant) => {
         if (!participant || !participant.notificationMessage) return;
@@ -56,7 +56,7 @@ const ExpenseTable = ({ participantSummary, onPaymentStatusChange }) => {
                             <td>{(participant.owedAmount || 0).toFixed(2)} руб.</td>
                             <td>{(participant.totalAmount || 0).toFixed(2)} руб.</td>
                             <td>
-                                {participant.totalAmount <= 0 && participant.participantId !== 'currentUser' && (
+                                {participant.totalAmount <= 0 && participant.participantId !== currentParticipantId && (
                                     <div className="transfer-actions">
                                         <button className="button secondary" onClick={() => copyMessageToClipboard(participant)}>Копировать</button>
                                         <button className="button secondary" onClick={() => sendMessageToTelegram(participant)}>Telegram</button>
