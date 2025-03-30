@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.sberhack2025.companyevents.core.service.DefaultServiceImpl;
 import ru.sberhack2025.companyevents.event.model.Event;
 import ru.sberhack2025.companyevents.event.repository.EventRepository;
+import ru.sberhack2025.companyevents.notification.dto.NotificationDto;
+import ru.sberhack2025.companyevents.notification.service.NotificationServiceImpl;
 import ru.sberhack2025.companyevents.participant.model.Participant;
 import ru.sberhack2025.companyevents.participant.repository.ParticipantRepository;
 import ru.sberhack2025.companyevents.participant.service.ParticipantService;
@@ -39,17 +41,20 @@ public class ProcurementServiceImpl extends DefaultServiceImpl<
     private final ParticipantRepository participantRepository;
     private final ParticipantService participantService;
     private final EventRepository eventRepository;
+    private final NotificationServiceImpl notificationService;
 
     public ProcurementServiceImpl(
             @Qualifier("procurementRepository") ProcurementRepository procurementRepository,
             ProcurementMapper procurementMapper,
             ParticipantRepository participantRepository,
             ParticipantService participantService,
-            EventRepository eventRepository) {
+            EventRepository eventRepository,
+            NotificationServiceImpl notificationService) {
         super(procurementRepository, procurementMapper);
         this.participantRepository = participantRepository;
         this.participantService = participantService;
         this.eventRepository = eventRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -81,6 +86,14 @@ public class ProcurementServiceImpl extends DefaultServiceImpl<
         if (updateDto.getResponsibleId() != null) {
             Participant newResponsible = participantRepository.find(updateDto.getResponsibleId());
             procurement.setResponsible(newResponsible);
+            Event event = procurement.getEvent();
+            if (!event.getOrganizer().equals(newResponsible)) {
+                String message = String.format("На вас назначили закупку: %s, цена: %s ₽", procurement.getName(), procurement.getPrice().toString());
+                NotificationDto notification = NotificationDto.builder()
+                        .messageText(message)
+                        .build();
+                notificationService.sendNotificationToParticipant(newResponsible.getId(), notification);
+            }
         }
 
         return toView(procurement);
