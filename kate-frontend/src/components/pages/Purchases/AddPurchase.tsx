@@ -94,7 +94,9 @@ const AddPurchase = () => {
     };
     console.log(purchaseData);
     if (isEditing) {
-      await updateProcurement(eventId, purchaseId, purchaseData);
+      const eventParticipants = (await getEventParticipants(eventId));
+      const participant = (eventParticipants as Participant[]).find(e => e.tgUserId === user.id);
+      await updateProcurement(eventId, purchaseId, purchaseData, participant.id);
     } else {
       await addProcurement(eventId, purchaseData);
     }
