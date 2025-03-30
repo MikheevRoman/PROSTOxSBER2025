@@ -95,32 +95,48 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer, SpringLongPol
                 sendMessage(botMessageSupplier.getWelcomeMessage(chatId));
             } else if (messageText.equals(Command.GET_DEBT_LIST.COMMAND_TEXT)) {
                 List<EventResponseDto> events = eventService.getUserEvents(chatId);
-                events.stream()
+                if (events.isEmpty()) {
+                    sendMessage(botMessageSupplier.getEmptyProcurementsListMessage(chatId));
+                } else {
+                    events.stream()
                         .map(eventResponseDto -> participantService.getEventParticipant(eventResponseDto.getId(), chatId))
                         .map(ParticipantResponseDto::getId)
                         .map(procurementsService::getContributedProcurements)
                         .forEach(procurement -> showContributedProcurementList(chatId, procurement));
+                }
             } else if (messageText.equals(Command.GET_MY_TASKS.COMMAND_TEXT)) {
                 List<EventResponseDto> events = eventService.getUserEvents(chatId);
-                events.stream()
-                        .map(eventResponseDto -> participantService.getEventParticipant(eventResponseDto.getId(), chatId))
-                        .map(ParticipantResponseDto::getId)
-                        .map(procurementsService::getResponsibleProcurements)
-                        .forEach(procurement -> showResponsibleProcurementList(chatId, procurement));
+                if (events.isEmpty()) {
+                    sendMessage(botMessageSupplier.getEmptyProcurementsListMessage(chatId));
+                } else {
+                    events.stream()
+                            .map(eventResponseDto -> participantService.getEventParticipant(eventResponseDto.getId(), chatId))
+                            .map(ParticipantResponseDto::getId)
+                            .map(procurementsService::getResponsibleProcurements)
+                            .forEach(procurement -> showResponsibleProcurementList(chatId, procurement));
+                }
             }
         }
     }
 
     private void showResponsibleProcurementList(Long chatId, List<ProcurementsResponseDto> procurements) {
-        procurements.stream()
-                .map(procurement -> botMessageSupplier.getResponsibleDescription(chatId, procurement))
-                .forEach(this::sendMessage);
+        if (procurements.isEmpty()) {
+            sendMessage(botMessageSupplier.getEmptyProcurementsListMessage(chatId));
+        } else {
+            procurements.stream()
+                    .map(procurement -> botMessageSupplier.getResponsibleDescription(chatId, procurement))
+                    .forEach(this::sendMessage);
+        }
     }
 
     private void showContributedProcurementList(Long chatId, List<ProcurementsResponseDto> procurements) {
-        procurements.stream()
-                .map(procurement -> botMessageSupplier.getProcurementDescription(chatId, procurement))
-                .forEach(this::sendMessage);
+        if (procurements.isEmpty()) {
+            sendMessage(botMessageSupplier.getEmptyProcurementsListMessage(chatId));
+        } else {
+            procurements.stream()
+                    .map(procurement -> botMessageSupplier.getProcurementDescription(chatId, procurement))
+                    .forEach(this::sendMessage);
+        }
     }
 
     private String getFullName(User user) {

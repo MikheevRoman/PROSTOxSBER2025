@@ -33,6 +33,8 @@ public class BotMessageSupplier {
             Описание: %s
             """;
 
+    private final String EMPTY_PROCUREMENTS_LIST_MESSAGE = "Пока ничего нет)";
+
     public SendMessage getWelcomeMessage(Long chatId) {
         List<KeyboardRow> keyboard = List.of(
                 new KeyboardRow(new KeyboardButton(Command.GET_DEBT_LIST.COMMAND_TEXT)),
@@ -80,6 +82,13 @@ public class BotMessageSupplier {
                 .chatId(userId)
                 .text(messageText)
                 .parseMode(ParseMode.HTML)
+                .build();
+    }
+
+    public SendMessage getEmptyProcurementsListMessage(Long userId) {
+        return SendMessage.builder()
+                .chatId(userId)
+                .text(EMPTY_PROCUREMENTS_LIST_MESSAGE)
                 .build();
     }
 
