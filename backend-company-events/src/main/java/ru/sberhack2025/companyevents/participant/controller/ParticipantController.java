@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.sberhack2025.companyevents.participant.dto.ParticipantCreateDto;
+import ru.sberhack2025.companyevents.participant.dto.ParticipantUpdateDto;
 import ru.sberhack2025.companyevents.participant.dto.ParticipantView;
 import ru.sberhack2025.companyevents.participant.service.ParticipantServiceImpl;
 
@@ -52,5 +53,14 @@ public class ParticipantController {
     public ParticipantView getAllByUser(@RequestParam("eventId") UUID eventId,
                                         @RequestParam("tgUserId") Long tgUserId) {
         return participantService.findByUserAndEvent(tgUserId, eventId);
+    }
+
+    @Operation(
+            summary = "Обновить участника по id (uuid)",
+            description = "Возвращает обновленного участника"
+    )
+    @PatchMapping("participants/{id}")
+    public ParticipantView update(@PathVariable UUID id, @Validated @RequestBody final ParticipantUpdateDto updateDto) {
+        return participantService.update(id, updateDto);
     }
 }

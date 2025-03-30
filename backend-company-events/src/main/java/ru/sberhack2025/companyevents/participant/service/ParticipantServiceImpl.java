@@ -10,6 +10,7 @@ import ru.sberhack2025.companyevents.common.error.exception.entity.NotUniqueExce
 import ru.sberhack2025.companyevents.event.model.Event;
 import ru.sberhack2025.companyevents.event.repository.EventRepository;
 import ru.sberhack2025.companyevents.participant.dto.ParticipantCreateDto;
+import ru.sberhack2025.companyevents.participant.dto.ParticipantUpdateDto;
 import ru.sberhack2025.companyevents.participant.dto.ParticipantView;
 import ru.sberhack2025.companyevents.participant.mapper.ParticipantMapper;
 import ru.sberhack2025.companyevents.participant.model.Participant;
@@ -80,6 +81,13 @@ public class ParticipantServiceImpl implements ParticipantService {
         Event event = eventRepository.find(eventId);
         Participant participant = repository.find(user, event);
         return toView(participant);
+    }
+
+    @Override
+    @Transactional
+    public ParticipantView update(UUID id, ParticipantUpdateDto updateDto) {
+        Participant participant = repository.find(id);
+        return toView(mapper.update(updateDto, participant));
     }
 
 

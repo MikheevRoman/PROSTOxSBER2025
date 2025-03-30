@@ -1,6 +1,7 @@
 package ru.sberhack2025.companyevents.participant.service;
 
 import ru.sberhack2025.companyevents.participant.dto.ParticipantCreateDto;
+import ru.sberhack2025.companyevents.participant.dto.ParticipantUpdateDto;
 import ru.sberhack2025.companyevents.participant.dto.ParticipantView;
 import ru.sberhack2025.companyevents.participant.model.Participant;
 
@@ -17,4 +18,5 @@ public interface ParticipantService {
     ParticipantView toView(Participant participant);
     List<ParticipantView> toView(List<Participant> participants);
     ParticipantView findByUserAndEvent(Long tgUserId, UUID eventId);
+    ParticipantView update(UUID id, ParticipantUpdateDto updateDto);
 }
