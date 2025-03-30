@@ -22,6 +22,18 @@
   margin-bottom: 0.5rem;
 }
 
+.event-comment {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  display: inline-block;
+  overflow: hidden;
+  resize: vertical;
+  min-height: 20px;
+  max-height: 200px;
+}
+
 .event-label {
   font-weight: 500;
   color: #3c4043;

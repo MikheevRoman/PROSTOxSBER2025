@@ -81,6 +81,13 @@ const AddPurchase = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    /**
+     * Проверка того, что ответственный введён
+     */
+    if (!formData?.responsibleId) {
+      alert("Выберите ответственного!");
+      return;
+    }
 
     const purchaseData: Procurement = {
       id: v4() as UUID,
@@ -92,9 +99,11 @@ const AddPurchase = () => {
       contributors: formData.contributors,
       fundraisingStatus: formData.fundraisingStatus
     };
-    console.log(purchaseData);
+
     if (isEditing) {
-      await updateProcurement(eventId, purchaseId, purchaseData);
+      const eventParticipants = (await getEventParticipants(eventId));
+      const participant = (eventParticipants as Participant[]).find(e => e.tgUserId === user.id);
+      await updateProcurement(eventId, purchaseId, purchaseData, participant.id);
     } else {
       await addProcurement(eventId, purchaseData);
     }
@@ -153,7 +162,7 @@ const AddPurchase = () => {
           >
             {participants.map(participant => (
                 <MenuItem key={participant.id} value={participant.id}>
-                  {participant.id === currentUserAsParticipant?.id ? 'Вы' : participant.name}
+                  {participant.name}
                 </MenuItem>
             ))}
           </Select>
@@ -180,7 +189,7 @@ const AddPurchase = () => {
             )}
           >
             {currentUserAsParticipant &&
-              <MenuItem key={currentUserAsParticipant.id} value={currentUserAsParticipant.id}>Вы</MenuItem>
+              <MenuItem key={currentUserAsParticipant.id} value={currentUserAsParticipant.id}> {currentUserAsParticipant.name} </MenuItem>
             }
 
             {
@@ -221,12 +230,13 @@ const AddPurchase = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="comment">Примечание</label>
+          <label htmlFor="comment">Примечание ({formData?.comment?.length || 0}/200)</label>
           <textarea
             id="comment"
             name="comment"
             value={formData?.comment}
             onChange={handleChange}
+            maxLength={200}
             placeholder="Дополнительная информация"
             rows={3}
           ></textarea>

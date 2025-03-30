@@ -95,7 +95,9 @@ const PurchasesTab = (props: PurchasesProps) => {
       newContributors = ['currentUser'];
     }
 
-    await updateProcurement(eventId, purchaseId, purchase);
+    const eventParticipants = (await getEventParticipants(eventId));
+    const participant = (eventParticipants as Participant[]).find(e => e.tgUserId === user.id);
+    await updateProcurement(eventId, purchaseId, purchase, participant.id);
     
     // Обновление состояния в UI
     setPurchases(prevPurchases => 

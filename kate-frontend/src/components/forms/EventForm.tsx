@@ -46,13 +46,14 @@ export const EventForm: React.FC<EventFormProps> = (props: EventFormProps) => {
     return (
         <form className="create-event-form" onSubmit={handleSubmit}>
             <div className="form-group">
-                <label htmlFor="name">Название мероприятия</label>
+                <label htmlFor="name">Название мероприятия ({formData?.name?.length || 0}/55)</label>
                 <input
                     type="text"
                     id="name"
                     name="name"
                     value={formData?.name}
                     onChange={handleChange}
+                    maxLength={55}
                     required
                     placeholder="Введите название мероприятия"
                 />
@@ -69,18 +70,6 @@ export const EventForm: React.FC<EventFormProps> = (props: EventFormProps) => {
                     onChange={handleChange}
                 />
             </div>
-
-            {/*<div className="form-group">*/}
-            {/*    <label htmlFor="place">Место</label>*/}
-            {/*    <input*/}
-            {/*        type="text"*/}
-            {/*        id="place"*/}
-            {/*        name="place"*/}
-            {/*        value={formData?.place}*/}
-            {/*        onChange={handleChange}*/}
-            {/*        placeholder="Укажите место проведения"*/}
-            {/*    />*/}
-            {/*</div>*/}
 
             <div className="form-group">
                 <label htmlFor="place">Место</label>
@@ -104,12 +93,13 @@ export const EventForm: React.FC<EventFormProps> = (props: EventFormProps) => {
             </div>
 
             <div className="form-group">
-                <label htmlFor="comment">Примечание</label>
+                <label htmlFor="comment">Примечание ({formData?.comment?.length || 0}/500)</label>
                 <textarea
                     id="comment"
                     name="comment"
                     value={formData?.comment}
                     onChange={handleChange}
+                    maxLength={500}
                     placeholder="Дополнительная информация"
                     rows={3}
                 />
