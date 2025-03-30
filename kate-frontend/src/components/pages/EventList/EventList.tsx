@@ -117,7 +117,12 @@ const EventList = () => {
           </button>
         }
       />
-
+      <div>
+        TG ID: {user?.id}<br />
+        TG Username: {user?.username}<br />
+        TG FN: {user?.first_name}<br />
+        TG LN: {user?.last_name}<br />
+      </div>
       <div className="event-list">
         {!events || events.length === 0 ? (
           <div className="empty-state">
