@@ -81,6 +81,13 @@ const AddPurchase = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    /**
+     * Проверка того, что ответственный введён
+     */
+    if (!formData?.responsibleId) {
+      alert("Выберите ответственного!");
+      return;
+    }
 
     const purchaseData: Procurement = {
       id: v4() as UUID,
