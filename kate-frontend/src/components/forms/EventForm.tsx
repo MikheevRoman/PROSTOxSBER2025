@@ -57,6 +57,7 @@ export const EventForm: React.FC<EventFormProps> = (props: EventFormProps) => {
                     id="date"
                     name="date"
                     value={formData?.date}
+                    required
                     onChange={handleChange}
                 />
             </div>
