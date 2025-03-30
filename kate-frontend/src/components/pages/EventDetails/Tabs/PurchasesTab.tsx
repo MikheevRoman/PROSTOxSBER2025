@@ -197,7 +197,7 @@ const PurchasesTab = (props: PurchasesProps) => {
 
   const getContributorsText = (contributors: UUID[]): string => {
     if (!contributors || contributors.length === 0) {
-      return 'Нет ответственных';
+      return 'Никто не скидывается';
     }
 
     return contributors.map(id => getParticipantNameById(id)).join(', ');

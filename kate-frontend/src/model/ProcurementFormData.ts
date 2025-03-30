@@ -6,6 +6,7 @@ interface ProcurementFormData {
     price: number;
     comment: string;
     completionStatus: CompletionStatus;
+    responsibleId?: UUID
     contributors: UUID[];
     fundraisingStatus: FundraisingStatus;
 }

@@ -42,6 +42,7 @@ const AddPurchase = () => {
             completionStatus: purchase.completionStatus,
             contributors: purchase.contributors,
             fundraisingStatus: purchase.fundraisingStatus,
+            responsibleId: purchase.responsibleId || currentUserAsParticipant?.id,
           });
           setIsEditing(true);
         } else {
@@ -86,7 +87,7 @@ const AddPurchase = () => {
       name: formData.name,
       price: formData.price,
       comment: formData.comment,
-      responsibleId: currentUserAsParticipant.id,
+      responsibleId: formData.responsibleId,
       completionStatus: formData.completionStatus,
       contributors: formData.contributors,
       fundraisingStatus: formData.fundraisingStatus
@@ -104,6 +105,9 @@ const AddPurchase = () => {
   if (loading) {
     return <div className="loading">Загрузка...</div>;
   }
+
+  // TODO: УДАЛИТЬ
+  console.log("Текущее состояние formData:", formData);
 
   return (
     <div className="add-purchase-container">
@@ -139,13 +143,30 @@ const AddPurchase = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="contributors">Ответственный</label>
+          <label htmlFor="responsibleId">Ответственный</label>
+          <Select
+              id="responsibleId"
+              name="responsibleId"
+              value={formData?.responsibleId}
+              onChange={handleChange}
+              input={<OutlinedInput label="Ответственный" />}
+          >
+            {participants.map(participant => (
+                <MenuItem key={participant.id} value={participant.id}>
+                  {participant.id === currentUserAsParticipant?.id ? 'Вы' : participant.name}
+                </MenuItem>
+            ))}
+          </Select>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="contributors">Кто скидывается</label>
           <Select
             id="contributors"
             name="contributors"
             value={formData?.contributors}
             onChange={handleChange}
-            input={<OutlinedInput label="Ответственный" />}
+            input={<OutlinedInput label="Кто скидывается" />}
             multiple
             renderValue={(selected) => (
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
