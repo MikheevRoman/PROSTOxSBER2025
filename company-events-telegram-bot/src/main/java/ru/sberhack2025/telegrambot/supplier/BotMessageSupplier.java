@@ -21,15 +21,14 @@ public class BotMessageSupplier {
     private final String PROCUREMENT_DESCRIPTION_PATTERN =
             """
             <b>%s</b> - <i>%s</i>
-            
             Описание: %s
             """;
 
     private final String RESPONSIBLE_DESCRIPTION_PATTERN =
             """
-            <b>%s</b> - <i>%s</i>
             Статус: %s
-            
+            <b>%s</b>
+            Стоимость: <i>%s</i>
             Описание: %s
             """;
 
@@ -54,37 +53,6 @@ public class BotMessageSupplier {
                 .build();
     }
 
-    public SendMessage getProcurementDescription(Long userId, ProcurementsResponseDto procurementsResponseDto) {
-        String messageText = String.format(
-                PROCUREMENT_DESCRIPTION_PATTERN,
-                procurementsResponseDto.getName(),
-                procurementsResponseDto.getPrice().toString(),
-                procurementsResponseDto.getComment()
-        );
-
-        return SendMessage.builder()
-                .chatId(userId)
-                .text(messageText)
-                .parseMode(ParseMode.HTML)
-                .build();
-    }
-
-    public SendMessage getResponsibleDescription(Long userId, ProcurementsResponseDto procurementsResponseDto) {
-        String messageText = String.format(
-                RESPONSIBLE_DESCRIPTION_PATTERN,
-                procurementsResponseDto.getName(),
-                procurementsResponseDto.getPrice().toString(),
-                procurementsResponseDto.getCompletionStatus().getTelegramText(),
-                procurementsResponseDto.getComment()
-        );
-
-        return SendMessage.builder()
-                .chatId(userId)
-                .text(messageText)
-                .parseMode(ParseMode.HTML)
-                .build();
-    }
-
     public SendMessage getEmptyProcurementsListMessage(Long userId) {
         return SendMessage.builder()
                 .chatId(userId)
@@ -92,4 +60,56 @@ public class BotMessageSupplier {
                 .build();
     }
 
+    public SendMessage getContributedProcurementEventList(Long chatId, List<ProcurementsResponseDto> procurements) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        if (procurements.isEmpty()) {
+            stringBuilder.append(EMPTY_PROCUREMENTS_LIST_MESSAGE);
+        } else {
+            procurements.stream()
+                    .forEach(procurement -> stringBuilder.append(
+                            String.format(
+                                    PROCUREMENT_DESCRIPTION_PATTERN,
+                                    procurement.getName(),
+                                    procurement.getPrice().toString(),
+                                    procurement.getComment()
+                            )
+                    ).append("""
+                        
+                        """));
+        }
+
+        return SendMessage.builder()
+                .chatId(chatId)
+                .text(stringBuilder.toString())
+                .parseMode(ParseMode.HTML)
+                .build();
+    }
+
+    public SendMessage getResponsibleProcurementEventList(Long chatId, List<ProcurementsResponseDto> procurements) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        if (procurements.isEmpty()) {
+            stringBuilder.append(EMPTY_PROCUREMENTS_LIST_MESSAGE);
+        } else {
+            procurements.stream()
+                    .forEach(procurement -> stringBuilder.append(
+                            String.format(
+                                    RESPONSIBLE_DESCRIPTION_PATTERN,
+                                    procurement.getName(),
+                                    procurement.getPrice().toString(),
+                                    procurement.getCompletionStatus().getTelegramText(),
+                                    procurement.getComment()
+                            )
+                    ).append("""
+                        
+                        """));
+        }
+
+        return SendMessage.builder()
+                .chatId(chatId)
+                .text(stringBuilder.toString())
+                .parseMode(ParseMode.HTML)
+                .build();
+    }
 }
