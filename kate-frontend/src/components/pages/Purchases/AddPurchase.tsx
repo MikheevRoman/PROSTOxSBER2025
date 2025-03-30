@@ -153,7 +153,7 @@ const AddPurchase = () => {
           >
             {participants.map(participant => (
                 <MenuItem key={participant.id} value={participant.id}>
-                  {participant.id === currentUserAsParticipant?.id ? 'Вы' : participant.name}
+                  {participant.name}
                 </MenuItem>
             ))}
           </Select>
@@ -180,7 +180,7 @@ const AddPurchase = () => {
             )}
           >
             {currentUserAsParticipant &&
-              <MenuItem key={currentUserAsParticipant.id} value={currentUserAsParticipant.id}>Вы</MenuItem>
+              <MenuItem key={currentUserAsParticipant.id} value={currentUserAsParticipant.id}> {currentUserAsParticipant.name} </MenuItem>
             }
 
             {
