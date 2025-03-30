@@ -18,7 +18,15 @@ const AddPurchase = () => {
   const { user } = useTelegramAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<ProcurementFormData>();
+  const [formData, setFormData] = useState<ProcurementFormData>({
+    name: '',
+    price: 0,
+    comment: '',
+    completionStatus: CompletionStatus.IN_PROGRESS,
+    contributors: [], // явно инициализируем пустым массивом
+    fundraisingStatus: FundraisingStatus.NONE,
+    responsibleId: undefined,
+  });
   const [loading, setLoading] = useState(false);
   const [currentUserAsParticipant, setCurrentUserAsParticipant] = useState<Participant>();
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -115,9 +123,6 @@ const AddPurchase = () => {
     return <div className="loading">Загрузка...</div>;
   }
 
-  // TODO: УДАЛИТЬ
-  console.log("Текущее состояние formData:", formData);
-
   return (
     <div className="add-purchase-container">
       <Header 
@@ -171,22 +176,27 @@ const AddPurchase = () => {
         <div className="form-group">
           <label htmlFor="contributors">Кто скидывается</label>
           <Select
-            id="contributors"
-            name="contributors"
-            value={formData?.contributors}
-            onChange={handleChange}
-            input={<OutlinedInput label="Кто скидывается" />}
-            multiple
-            renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {selected.map((value) => (
-                      <Chip
-                          key={value}
-                          label={getParticipantNameById(value)}
-                      />
-                  ))}
-                </Box>
-            )}
+              id="contributors"
+              name="contributors"
+              value={formData?.contributors || []}
+              onChange={handleChange}
+              input={<OutlinedInput label="Кто скидывается" />}
+              multiple
+              renderValue={(selected) => {
+                if (!selected || selected.length === 0) {
+                  return <span>Все</span>; // Возвращаем React-элемент вместо строки
+                }
+                return (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {selected.map((value) => (
+                          <Chip
+                              key={value}
+                              label={getParticipantNameById(value)}
+                          />
+                      ))}
+                    </Box>
+                );
+              }}
           >
             {currentUserAsParticipant &&
               <MenuItem key={currentUserAsParticipant.id} value={currentUserAsParticipant.id}> {currentUserAsParticipant.name} </MenuItem>
