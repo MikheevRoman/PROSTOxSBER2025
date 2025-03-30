@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import {retrieveLaunchParams} from "@telegram-apps/sdk";
 
 interface TelegramWebApp {
     ready: () => void;
@@ -14,6 +15,9 @@ interface TelegramWebApp {
         auth_date?: number;
         hash?: string;
     };
+    // Добавляем тип для обработки событий
+    onEvent?: (eventType: string, eventHandler: () => void) => void;
+    offEvent?: (eventType: string, eventHandler: () => void) => void;
 }
 
 declare global {
@@ -26,10 +30,14 @@ declare global {
 
 export const useTelegram = () => {
     const [tg, setTg] = useState<TelegramWebApp | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const initTelegram = () => {
             try {
+                localStorage.clear();
+
+                // 1. Проверяем мок-режим
                 if (process.env.NODE_ENV === 'development' &&
                     process.env.REACT_APP_ENABLE_TELEGRAM_MOCK === 'true') {
 
@@ -51,27 +59,80 @@ export const useTelegram = () => {
 
                     setTg(mockTg);
                     window.Telegram = { WebApp: mockTg };
-                    localStorage.setItem("telegram_webapp", JSON.stringify(mockTg)); // Сохраняем мок-объект
+                    setIsLoading(false);
                     return;
                 }
 
-                if (window.Telegram?.WebApp) {
-                    setTg(window.Telegram.WebApp);
-                    localStorage.setItem("telegram_webapp", JSON.stringify(window.Telegram.WebApp)); // Кешируем
-                } else {
-                    console.warn('Telegram WebApp not available');
+                // 2. Проверяем наличие Telegram WebApp
+                // if (!window.Telegram?.WebApp) {
+                //     console.warn('Telegram WebApp not available');
+                //     setTg({
+                //         ready: () => {},
+                //         expand: () => {},
+                //     });
+                //     setIsLoading(false);
+                //     return;
+                // }
+
+                const webApp = window.Telegram.WebApp;
+
+                // 3. Обработка события готовности
+                const handleReady = () => {
+                    console.log('Telegram WebApp is ready');
                     setTg({
                         ready: () => {},
-                        expand: () => {}
+                        expand: () => {},
+                        initDataUnsafe: {
+                            user: {
+                                id: retrieveLaunchParams().tgWebAppData.user.id,
+                                first_name: retrieveLaunchParams().tgWebAppData.user.first_name,
+                                last_name: retrieveLaunchParams().tgWebAppData.user.last_name,
+                                username: retrieveLaunchParams().tgWebAppData.user.username,
+                                photo_url: retrieveLaunchParams().tgWebAppData.user.photo_url
+                            },
+                            auth_date: retrieveLaunchParams().tgWebAppData.auth_date.getDate(),
+                            hash: retrieveLaunchParams().tgWebAppData.hash
+                        }
                     });
+                    setIsLoading(false);
+
+                    // Раскрываем WebApp на весь экран
+                    webApp?.expand();
+                };
+
+                // Проверяем, доступен ли onEvent
+                if (webApp?.onEvent) {
+                    webApp?.onEvent('webAppReady', handleReady);
+                } else {
+                    // Если onEvent недоступен, используем ready()
+                    webApp?.ready();
+                    handleReady();
                 }
+
+                // Возвращаем функцию очистки
+                return () => {
+                    if (webApp.offEvent) {
+                        webApp.offEvent('webAppReady', handleReady);
+                    }
+                };
+
             } catch (e) {
                 console.error('Telegram init error:', e);
+                setIsLoading(false);
             }
         };
 
-        initTelegram();
+        // Добавляем небольшую задержку для гарантии загрузки Telegram WebApp
+        const timer = setTimeout(initTelegram, 100);
+
+        return () => clearTimeout(timer);
     }, []);
 
-    return { tg };
+    return {
+        tg,
+        isLoading,
+        // Добавляем удобные геттеры
+        user: tg?.initDataUnsafe?.user,
+        userId: tg?.initDataUnsafe?.user?.id
+    };
 };
