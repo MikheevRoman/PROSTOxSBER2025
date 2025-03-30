@@ -40,7 +40,7 @@ public class EventView implements DateFormatter {
     @Schema(description = "Comment to event", example = "Funny comment")
     String comment;
 
-    @Schema(description = "Comment to event", example = "Funny comment")
+    @Schema(description = "Organizer card info", example = "+7 (999) 999-99-99, сбер")
     String organizerCardInfo;
 
     @Schema(description = "Organizer's telegram user id", example = "111222333")
