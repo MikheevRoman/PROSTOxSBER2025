@@ -68,14 +68,35 @@ public class Procurement extends BaseEntity {
     private FundraisingStatus fundraisingStatus = FundraisingStatus.NONE;
 
     public enum CompletionStatus {
-        IN_PROGRESS,
-        DONE
+        IN_PROGRESS("В процессе"),
+        DONE("Завершено");
+
+
+        private final String displayName;
+
+        CompletionStatus(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
     }
 
     public enum FundraisingStatus {
-        NONE,      // сбор средств не производится
-        PLANNING,  // планируется сбор средств
-        DONE       // сбор средств завершён
+        NONE("Нет"),      // сбор средств не производится
+        PLANNING("Планируется"),  // планируется сбор средств
+        DONE("Завершён");   // сбор средств завершён
+
+        private final String displayName;
+
+        FundraisingStatus(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
     }
 
     public void addContributor(Participant participant) {

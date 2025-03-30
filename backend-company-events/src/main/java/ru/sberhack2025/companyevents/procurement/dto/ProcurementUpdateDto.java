@@ -49,4 +49,7 @@ public class ProcurementUpdateDto {
 
     @Schema(hidden = true)
     UUID eventId;
+
+    @Schema(hidden = true)
+    UUID actionParticipant;
 }
