@@ -39,6 +39,9 @@ public class EventUpdateDto implements DateFormatter {
     @Schema(description = "Organizer card info", example = "+7 (999) 999-99-99, сбер")
     String organizerCardInfo;
 
+    @Schema(description = "Organizer telegram user id", example = "111222333")
+    Long organizerTgUserId;
+
     @Schema(description = "Comment to event", example = "Funny comment")
     String comment;
 

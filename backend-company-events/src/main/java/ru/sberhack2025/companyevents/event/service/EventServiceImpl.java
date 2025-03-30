@@ -1,6 +1,5 @@
 package ru.sberhack2025.companyevents.event.service;
 
-import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -19,6 +18,7 @@ import ru.sberhack2025.companyevents.user.model.User;
 import ru.sberhack2025.companyevents.user.repository.UserRepository;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Andrey Kurnosov
@@ -28,12 +28,15 @@ import java.util.List;
 public class EventServiceImpl extends DefaultServiceImpl<Event, EventCreateDto, EventUpdateDto, EventView, EventRepository, EventMapper> implements EventService {
 
     private final UserRepository userRepository;
+    private final ParticipantRepository participantRepository;
 
     public EventServiceImpl(@Qualifier("eventRepository") EventRepository eventRepository,
                             EventMapper eventMapper,
-                            UserRepository userRepository) {
+                            UserRepository userRepository,
+                            ParticipantRepository participantRepository) {
         super(eventRepository, eventMapper);
         this.userRepository = userRepository;
+        this.participantRepository = participantRepository;
     }
 
     @Override
@@ -42,6 +45,23 @@ public class EventServiceImpl extends DefaultServiceImpl<Event, EventCreateDto, 
         User user = userRepository.find(tgUserId);
         List<Event> events = repository.findEventsByTgUserId(user.getTgUserId());
         return events.stream().map(e -> enrichView(e, mapper.toView(e))).toList();
+    }
+
+    @Override
+    @Transactional
+    public EventView update(UUID id, EventUpdateDto updateDto) {
+        Event event = repository.find(id);
+        mapper.update(updateDto, event);
+        Long newOrganizerTgUserId = updateDto.getOrganizerTgUserId();
+        if (newOrganizerTgUserId != null &&
+                !newOrganizerTgUserId.equals(event.getOrganizer().getUser().getTgUserId())) {
+            User user = userRepository.find(newOrganizerTgUserId);
+            Participant newOrganizer = participantRepository.find(user, event);
+            event.getOrganizer().setIsOrganizer(false);
+            event.setOrganizer(newOrganizer);
+            newOrganizer.setIsOrganizer(true);
+        }
+        return toView(event);
     }
 
     @Override
