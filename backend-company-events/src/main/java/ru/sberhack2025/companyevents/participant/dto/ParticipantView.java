@@ -25,6 +25,9 @@ public class ParticipantView implements DateFormatter {
     @Schema(description = "Participant name", example = "Masha")
     String name;
 
+    @Schema(description = "True if organizer transfer money to participant", example = "true")
+    Boolean hasPayment;
+
     @Schema(description = "Participant telegram user id", example = "433566788")
     Long tgUserId;
 
