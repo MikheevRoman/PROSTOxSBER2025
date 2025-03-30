@@ -47,9 +47,8 @@ public class ProcurementCreateDto {
     @Schema(description = "List of participants ids who will pay for this procurement")
     List<UUID> contributors;
 
-    @Builder.Default
     @Schema(description = "Status of procurement task")
-    Procurement.FundraisingStatus fundraisingStatus = Procurement.FundraisingStatus.NONE;
+    Procurement.FundraisingStatus fundraisingStatus;
 
     @Schema(hidden = true)
     UUID eventId;

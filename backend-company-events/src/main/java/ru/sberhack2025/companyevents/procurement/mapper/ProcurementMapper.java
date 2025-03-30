@@ -2,6 +2,7 @@ package ru.sberhack2025.companyevents.procurement.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import ru.sberhack2025.companyevents.core.mapper.DefaultMapper;
 import ru.sberhack2025.companyevents.procurement.dto.ContributionView;
@@ -29,6 +30,9 @@ public interface ProcurementMapper extends DefaultMapper<Procurement, Procuremen
 
     @Mapping(target = "contributors", ignore = true)
     ProcurementView toView(Procurement procurement);
+
+    @Mapping(target = "contributors", ignore = true)
+    Procurement update(ProcurementUpdateDto updateDto, @MappingTarget Procurement entity);
 
     default List<ContributionView> toContributionView(List<Procurement> procurements, Integer participationsNumber) {
         return procurements.stream().map(p -> toContributionView(p, participationsNumber)).toList();

@@ -54,6 +54,41 @@ public class ProcurementServiceImpl extends DefaultServiceImpl<
 
     @Override
     @Transactional
+    public ProcurementView update(UUID id, ProcurementUpdateDto updateDto) {
+        Procurement procurement = repository.find(id);
+        mapper.update(updateDto, procurement);
+
+        // обновляем контрибьютеров
+        if (updateDto.getContributors() != null) {
+
+            // список удаленных контрибьютеров
+            List<Participant> newContributors = participantRepository.findAllById(updateDto.getContributors());
+            List<Participant> removedContributors = new ArrayList<>(procurement.getContributors());
+            removedContributors.removeAll(newContributors);
+            for (Participant participant : removedContributors) {
+                procurement.removeContributor(participant);
+            }
+
+            // список добавленных контрибьютеров
+            List<Participant> addedContributors = new ArrayList<>(newContributors);
+            addedContributors.removeAll(procurement.getContributors());
+            for (Participant participant : addedContributors) {
+                procurement.addContributor(participant);
+            }
+        }
+
+        // обновляем ответственного
+        if (updateDto.getResponsibleId() != null) {
+            Participant newResponsible = participantRepository.find(updateDto.getResponsibleId());
+            procurement.setResponsible(newResponsible);
+        }
+
+        return toView(procurement);
+
+    }
+
+    @Override
+    @Transactional
     public List<ProcurementView> createAndGetAll(ProcurementCreateDto createDto) {
         this.create(createDto);
         return this.getAllByEvent(createDto.getEventId());

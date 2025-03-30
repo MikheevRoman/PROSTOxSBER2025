@@ -1,4 +1,4 @@
-package ru.sberhack2025.companyevents.costresult;
+package ru.sberhack2025.companyevents.costresult.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -7,8 +7,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.sberhack2025.companyevents.costresult.dto.CostResultView;
 import ru.sberhack2025.companyevents.costresult.service.CostResultService;
-import ru.sberhack2025.companyevents.participant.dto.ParticipantView;
-import ru.sberhack2025.companyevents.participant.service.ParticipantServiceImpl;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,8 +25,8 @@ public class CostResultController {
     private final CostResultService costResultService;
 
     @Operation(
-            summary = "Получить всех участников мероприятия",
-            description = "Поиск по id мероприятия (uuid)"
+            summary = "Получить итоги мероприятия по каждому участнику",
+            description = "Возвращает кто сколько потратил и сколько должен"
     )
     @GetMapping("events/{eventId}/cost-results")
     public List<CostResultView> getEventCostResults(@PathVariable UUID eventId) {

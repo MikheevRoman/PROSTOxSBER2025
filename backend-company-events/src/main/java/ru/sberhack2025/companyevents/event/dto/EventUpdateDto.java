@@ -36,6 +36,9 @@ public class EventUpdateDto implements DateFormatter {
     @Digits(integer = 10, fraction = 2, message = "Budget must be up to 10 digits in integral part and 2 in fraction")
     BigDecimal budget;
 
+    @Schema(description = "Organizer card info", example = "+7 (999) 999-99-99, сбер")
+    String organizerCardInfo;
+
     @Schema(description = "Comment to event", example = "Funny comment")
     String comment;
 
