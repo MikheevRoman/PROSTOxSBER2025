@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import {retrieveLaunchParams} from "@telegram-apps/sdk";
 
 interface TelegramWebApp {
     ready: () => void;
@@ -67,7 +68,7 @@ export const useTelegram = () => {
                     console.warn('Telegram WebApp not available');
                     setTg({
                         ready: () => {},
-                        expand: () => {}
+                        expand: () => {},
                     });
                     setIsLoading(false);
                     return;
@@ -78,7 +79,21 @@ export const useTelegram = () => {
                 // 3. Обработка события готовности
                 const handleReady = () => {
                     console.log('Telegram WebApp is ready');
-                    setTg(webApp);
+                    setTg({
+                        ready: () => {},
+                        expand: () => {},
+                        initDataUnsafe: {
+                            user: {
+                                id: retrieveLaunchParams().tgWebAppData.user.id,
+                                first_name: retrieveLaunchParams().tgWebAppData.user.first_name,
+                                last_name: retrieveLaunchParams().tgWebAppData.user.last_name,
+                                username: retrieveLaunchParams().tgWebAppData.user.username,
+                                photo_url: retrieveLaunchParams().tgWebAppData.user.photo_url
+                            },
+                            auth_date: retrieveLaunchParams().tgWebAppData.auth_date.getDate(),
+                            hash: retrieveLaunchParams().tgWebAppData.hash
+                        }
+                    });
                     setIsLoading(false);
 
                     // Раскрываем WebApp на весь экран
