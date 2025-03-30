@@ -1,24 +1,23 @@
 import React from 'react';
 
-const ExpenseTable = ({ participantSummary, savedTemplate, event, onPaymentStatusChange, calculateExpenses }) => {
+const ExpenseTable = ({ participantSummary, onPaymentStatusChange }) => {
+
+    // TODO: Сообщение берётся из участника мероприятия
     const copyMessageToClipboard = (participant) => {
-        if (!participant || !savedTemplate) return;
-
-        const amount = Math.abs(participant.diff).toFixed(2);
-        const message = savedTemplate.replace('{amount}', amount).replace('{eventTitle}', event.title);
-
-        navigator.clipboard.writeText(message)
-            .then(() => alert('Сообщение скопировано в буфер обмена'))
-            .catch(err => console.error('Ошибка копирования: ', err));
+        // if (!participant || !savedTemplate) return;
+        // const amount = Math.abs(participant.totalAmount || 0).toFixed(2);
+        // const message = savedTemplate.replace('{amount}', amount).replace('{eventTitle}', event.title);
+        // navigator.clipboard.writeText(message)
+        //     .then(() => alert('Сообщение скопировано в буфер обмена'))
+        //     .catch(err => console.error('Ошибка копирования: ', err));
     };
 
+    // TODO: Сообщение берётся из участника мероприятия
     const sendMessageToTelegram = (participant) => {
-        if (!participant || !savedTemplate) return;
-
-        const amount = Math.abs(participant.diff).toFixed(2);
-        const message = encodeURIComponent(savedTemplate.replace('{amount}', amount).replace('{eventTitle}', event.title));
-
-        window.open(`https://t.me/share/url?url=${message}`, '_blank');
+        // if (!participant || !savedTemplate) return;
+        // const amount = Math.abs(participant.diff).toFixed(2);
+        // const message = encodeURIComponent(savedTemplate.replace('{amount}', amount).replace('{eventTitle}', event.title));
+        // window.open(`https://t.me/share/url?url=${message}`, '_blank');
     };
 
     // TODO: Должны меняться статусы, если участник уже оплатил перевод, при нажатии на чекбокс.
@@ -32,9 +31,6 @@ const ExpenseTable = ({ participantSummary, savedTemplate, event, onPaymentStatu
 
     return (
         <div className="table-container summary-table">
-            <button className="button" onClick={calculateExpenses}>
-                Рассчитать расходы
-            </button>
             <table>
                 <thead>
                 <tr>
@@ -47,35 +43,33 @@ const ExpenseTable = ({ participantSummary, savedTemplate, event, onPaymentStatu
                 </tr>
                 </thead>
                 <tbody>
-                {participantSummary.map((participant) => (
-                    <tr key={participant.id} className="participant-row">
-                        <td>
-                            {participant.diff < 0 && (
+                {participantSummary.map((participant) => {
+                    const diff = participant.totalAmount || 0;
+
+                    return (
+                        <tr key={participant.participantId} className="participant-row">
+                            <td>
                                 <input
                                     type="checkbox"
-                                    checked={participant.paid}
-                                    onChange={(e) => onPaymentStatusChange(participant.id, e.target.checked)}
+                                    checked={!!participant.paid}
+                                    onChange={(e) => onPaymentStatusChange(participant.participantId, e.target.checked)}
                                 />
-                            )}
-                        </td>
-                        <td>{participant.name}</td>
-                        <td>{participant.spent.toFixed(2)} руб.</td>
-                        <td>{participant.share.toFixed(2)} руб.</td>
-                        <td>
-                            {participant.diff === 0 ? 'Не требуется' :
-                                participant.diff > 0 ? <span className="positive">+{participant.diff.toFixed(2)} руб.</span> :
-                                    <span className="negative">{participant.diff.toFixed(2)} руб.</span>}
-                        </td>
-                        <td>
-                            {participant.diff < 0 && participant.id !== 'currentUser' && (
-                                <div className="transfer-actions">
-                                    <button className="button secondary" onClick={() => copyMessageToClipboard(participant)}>Копировать</button>
-                                    <button className="button secondary" onClick={() => sendMessageToTelegram(participant)}>Telegram</button>
-                                </div>
-                            )}
-                        </td>
-                    </tr>
-                ))}
+                            </td>
+                            <td>{participant.name || 'Неизвестный'}</td>
+                            <td>{(participant.spentAmount || 0).toFixed(2)} руб.</td>
+                            <td>{(participant.owedAmount || 0).toFixed(2)} руб.</td>
+                            <td>{(participant.totalAmount || 0).toFixed(2)} руб.</td>
+                            <td>
+                                {participant.totalAmount <= 0 && participant.participantId !== 'currentUser' && (
+                                    <div className="transfer-actions">
+                                        <button className="button secondary" onClick={() => copyMessageToClipboard(participant)}>Копировать</button>
+                                        <button className="button secondary" onClick={() => sendMessageToTelegram(participant)}>Telegram</button>
+                                    </div>
+                                )}
+                            </td>
+                        </tr>
+                    );
+                })}
                 </tbody>
             </table>
         </div>

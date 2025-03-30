@@ -1,23 +1,25 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 
-const MessageTemplateForm = ({ template, setTemplate, saveTemplate, savedTemplate }) => {
-    return (
+const MessageTemplateForm = ({ paymentDetails, setPaymentDetails, handleUpdateEvent }) => {
+  const [localPaymentDetails, setLocalPaymentDetails] = useState(paymentDetails);
+
+  useEffect(() => {
+    setLocalPaymentDetails(paymentDetails);
+  }, [paymentDetails]); // Обновляем локальное состояние при изменении paymentDetails
+
+
+  return (
         <div className="template-form">
-            <h3>Шаблон сообщения для перевода средств</h3>
-            <p>Используйте {'{amount}'} для суммы и {'{eventTitle}'} для названия мероприятия</p>
-            <textarea
-                value={template}
-                onChange={(e) => setTemplate(e.target.value)}
-                placeholder="Введите шаблон сообщения для перевода средств"
-            />
-            <button className="button" onClick={saveTemplate}>Сохранить шаблон</button>
-
-            {savedTemplate && (
-                <div className="saved-template">
-                    <h4>Текущий шаблон:</h4>
-                    <p>{savedTemplate}</p>
-                </div>
-            )}
+            <h3>Реквизиты для перевода средств</h3>
+          <textarea
+              value={localPaymentDetails}
+              onChange={(e) => {
+                setLocalPaymentDetails(e.target.value);
+                setPaymentDetails(e.target.value);
+              }}
+              placeholder="Введите реквизиты для перевода средств"
+          />
+            <button className="button" onClick={handleUpdateEvent}>Сохранить реквизиты</button>
         </div>
     );
 };

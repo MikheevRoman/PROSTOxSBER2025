@@ -77,9 +77,10 @@ export async function deleteEvent(eventId: UUID): Promise<void> {
 export async function updateEvent(eventId: UUID, eventData: EventEntity): Promise<EventEntity> {
     const eventUpdateDto: EventFormData = {
         name: eventData.name,
-        date: eventData.date.toISOString().replace(/\.\d{3}Z$/, 'Z'), // см. createEvent()
+        date: new Date(eventData.date).toISOString().replace(/\.\d{3}Z$/, 'Z'),
         place: eventData.place,
         budget: eventData.budget,
+        organizerCardInfo: eventData.organizerCardInfo,
         comment: eventData.comment
     };
 

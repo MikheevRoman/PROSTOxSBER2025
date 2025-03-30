@@ -32,22 +32,6 @@ const MyContributionsTab = ({ participantId }) => {
     fetchContributions();
   }, [participantId]);
 
-  //   if (event && event.purchases) {
-  //     // Фильтрация покупок, где текущий пользователь является участником
-  //     const userContributions = event.purchases.filter(purchase => {
-  //       return purchase.contributors === 'all' ||
-  //              (purchase.contributors && purchase.contributors.includes('currentUser'));
-  //     });
-  //
-  //     setContributions(userContributions);
-  //
-  //     // Расчет общей суммы
-  //     const total = userContributions.reduce((sum, purchase) =>
-  //       sum + (purchase.cost ? parseFloat(purchase.cost) : 0), 0);
-  //     setTotalAmount(total);
-  //   }
-  // }, [event]);
-
   return (
     <div className="tab-container">
       <div className="tab-header">
