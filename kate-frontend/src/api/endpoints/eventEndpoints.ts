@@ -91,3 +91,14 @@ export async function updateEvent(eventId: UUID, eventData: EventEntity): Promis
             throw error;
         });
 }
+
+/**
+ * Генерирует реферальную ссылку-приглашение для мероприятия в Telegram боте
+ * @param {number} userId - Telegram ID пользователя
+ * @param {UUID} eventId - UUID мероприятия
+ * @returns {Promise<string>} Promise, который разрешается в Telegram-ссылку вида https://t.me/CompanyEventsBot?start={refCode}
+ */
+export const getEventInviteLink = async (userId: number, eventId: UUID): Promise<string> => {
+    const eventRefCode = (await getEventById(userId, eventId)).eventRefCode;
+    return `https://t.me/CompanyEventsBot?start=${eventRefCode}`;
+};

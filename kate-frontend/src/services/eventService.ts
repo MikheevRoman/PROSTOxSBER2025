@@ -3,7 +3,7 @@ import axios from "axios";
 import {UUID} from "node:crypto";
 import EventEntity from "../model/EventEntity";
 import ApiErrorResponse from "../model/ApiErrorResponse";
-import {getEvents} from "../api/endpoints/eventEndpoints";
+import {getEventById, getEvents} from "../api/endpoints/eventEndpoints";
 
 // Сервис для работы с данными о мероприятиях
 const EVENTS_KEY = 'kate_events';
@@ -98,10 +98,7 @@ const generateId = () => v4();
 // };
 
 // TODO: Использовать API вместо локального хранилища
-// Получение приглашения для мероприятия
-export const getEventInviteLink = (eventId: UUID): string => {
-  return `${window.location.origin}/event/${eventId}`;
-};
+
 
 // Добавление участника в мероприятие
 export const addParticipant = async (

@@ -15,7 +15,7 @@ interface TelegramWebApp {
         auth_date?: number;
         hash?: string;
     };
-    // Добавляем тип для обработки событий
+
     onEvent?: (eventType: string, eventHandler: () => void) => void;
     offEvent?: (eventType: string, eventHandler: () => void) => void;
 }
@@ -37,7 +37,7 @@ export const useTelegram = () => {
             try {
                 localStorage.clear();
 
-                // 1. Проверяем мок-режим
+                // Проверяем мок-режим
                 if (process.env.NODE_ENV === 'development' &&
                     process.env.REACT_APP_ENABLE_TELEGRAM_MOCK === 'true') {
 
@@ -63,20 +63,9 @@ export const useTelegram = () => {
                     return;
                 }
 
-                // 2. Проверяем наличие Telegram WebApp
-                // if (!window.Telegram?.WebApp) {
-                //     console.warn('Telegram WebApp not available');
-                //     setTg({
-                //         ready: () => {},
-                //         expand: () => {},
-                //     });
-                //     setIsLoading(false);
-                //     return;
-                // }
+                const webApp = window?.Telegram?.WebApp;
 
-                const webApp = window.Telegram.WebApp;
-
-                // 3. Обработка события готовности
+                // Обработка события готовности
                 const handleReady = () => {
                     console.log('Telegram WebApp is ready');
                     setTg({
@@ -131,7 +120,6 @@ export const useTelegram = () => {
     return {
         tg,
         isLoading,
-        // Добавляем удобные геттеры
         user: tg?.initDataUnsafe?.user,
         userId: tg?.initDataUnsafe?.user?.id
     };

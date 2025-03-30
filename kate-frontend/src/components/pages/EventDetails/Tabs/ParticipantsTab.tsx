@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import { useParams } from 'react-router-dom';
-import { getEventInviteLink, removeParticipant, assignNewOrganizer } from '../../../../services/eventService';
+import { removeParticipant, assignNewOrganizer } from '../../../../services/eventService';
 import './TabStyles.css';
 import {UUID} from "node:crypto";
 import { useTelegramAuth } from "../../../../context/TelegramAuthContext";
@@ -9,16 +9,18 @@ import { getEventParticipants } from "../../../../api/endpoints/participantsEndp
 import ApiErrorResponse from "../../../../model/ApiErrorResponse";
 import EventEntity from "../../../../model/EventEntity";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
+import {getEventInviteLink} from "../../../../api/endpoints/eventEndpoints";
 
 
 interface ParticipantItemProps {
   event: EventEntity;
 }
 
-const ParticipantsTab = ({ event }: ParticipantItemProps) => {
-  const { eventId } = useParams<{ eventId: UUID }>();
+const ParticipantsTab = ({event}: ParticipantItemProps) => {
+  const {eventId} = useParams<{ eventId: UUID }>();
   const [participants, setParticipants] = useState<Participant[]>([]);
-  const { user } = useTelegramAuth();
+  const {user} = useTelegramAuth();
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
 
   const loadParticipants = useCallback(async () => {
     const participants = await getEventParticipants(eventId);
@@ -27,6 +29,8 @@ const ParticipantsTab = ({ event }: ParticipantItemProps) => {
       return;
     }
     setParticipants(participants);
+    const link = await getEventInviteLink(user.id, eventId);
+    setInviteLink(link);
   }, [eventId]);
 
   useEffect(() => {
@@ -39,8 +43,8 @@ const ParticipantsTab = ({ event }: ParticipantItemProps) => {
     if (window.confirm('Вы уверены, что хотите удалить этого участника?')) {
       const success = await removeParticipant(user.id, eventId, participantId);
       if (success) {
-        setParticipants(prevParticipants => 
-          prevParticipants.filter(p => p !== participantId)
+        setParticipants(prevParticipants =>
+            prevParticipants.filter(p => p !== participantId)
         );
       }
     }
@@ -57,15 +61,15 @@ const ParticipantsTab = ({ event }: ParticipantItemProps) => {
     }
   };
 
-  const copyInviteLink = () => {
-    const link = getEventInviteLink(eventId);
+  const copyInviteLink = async () => {
+    const link = await getEventInviteLink(user.id, eventId);
     navigator.clipboard.writeText(link)
-      .then(() => {
-        alert('Ссылка-приглашение скопирована в буфер обмена');
-      })
-      .catch(err => {
-        console.error('Не удалось скопировать ссылку: ', err);
-      });
+        .then(() => {
+          alert('Ссылка-приглашение скопирована в буфер обмена');
+        })
+        .catch(err => {
+          console.error('Не удалось скопировать ссылку: ', err);
+        });
   };
 
   return (
@@ -100,7 +104,7 @@ const ParticipantsTab = ({ event }: ParticipantItemProps) => {
                               variant="contained"
                               color="error"
                               onClick={() => handleRemoveParticipant(participant.id)}
-                              style={{ marginLeft: 10 }}
+                              style={{marginLeft: 10}}
                           >
                             Удалить
                           </Button>
@@ -115,7 +119,8 @@ const ParticipantsTab = ({ event }: ParticipantItemProps) => {
         <h3>Пригласить участников</h3>
         <p>Поделитесь ссылкой, чтобы пригласить новых участников в мероприятие.</p>
         <div>
-          <input className="invite-link-input" type="text" value={getEventInviteLink(eventId)} readOnly style={{ width: '80%', marginRight: 10 }} />
+          <input className="invite-link-input" type="text" value={inviteLink} readOnly
+                 style={{width: '80%', marginRight: 10}}/>
           <Button variant="contained" onClick={copyInviteLink}>Копировать</Button>
         </div>
       </div>

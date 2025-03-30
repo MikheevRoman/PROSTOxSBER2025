@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../common/Header';
-import { getEventInviteLink } from '../../../services/eventService';
 import './CreateEvent.css';
 import EventFormData from "../../../model/EventFormData";
 import EventEntity from "../../../model/EventEntity";
@@ -9,7 +8,7 @@ import ApiErrorResponse from '../../../model/ApiErrorResponse';
 import {v4} from "uuid";
 import {UUID} from "node:crypto";
 import {useTelegramAuth} from "../../../context/TelegramAuthContext";
-import {createEvent} from "../../../api/endpoints/eventEndpoints";
+import {createEvent, getEventInviteLink} from "../../../api/endpoints/eventEndpoints";
 
 const CreateEvent = () => {
   const [formData, setFormData] = useState<EventFormData>();
@@ -56,11 +55,11 @@ const CreateEvent = () => {
     navigate('/');
   };
 
-  const copyInviteLink = () => {
+  const copyInviteLink = async () => {
     if (!createdEvent) {
       return;
     }
-    const link = getEventInviteLink(createdEvent.id);
+    const link = await getEventInviteLink(user.id, createdEvent.id);
     navigator.clipboard.writeText(link)
       .then(() => {
         alert('Ссылка-приглашение скопирована в буфер обмена');
@@ -85,7 +84,7 @@ const CreateEvent = () => {
               <p>Пригласите участников по ссылке:</p>
               <div className="invite-link-action">
                 <span className="invite-link-text">
-                  {createdEvent && getEventInviteLink(createdEvent.id)}
+                  {createdEvent && getEventInviteLink(user.id, createdEvent.id)}
                 </span>
                 <button className="button secondary" onClick={copyInviteLink}>
                   Копировать
