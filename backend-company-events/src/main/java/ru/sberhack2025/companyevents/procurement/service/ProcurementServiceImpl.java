@@ -11,7 +11,6 @@ import ru.sberhack2025.companyevents.notification.dto.NotificationDto;
 import ru.sberhack2025.companyevents.notification.service.NotificationServiceImpl;
 import ru.sberhack2025.companyevents.participant.model.Participant;
 import ru.sberhack2025.companyevents.participant.repository.ParticipantRepository;
-import ru.sberhack2025.companyevents.participant.service.ParticipantService;
 import ru.sberhack2025.companyevents.procurement.dto.ContributionView;
 import ru.sberhack2025.companyevents.procurement.dto.ProcurementCreateDto;
 import ru.sberhack2025.companyevents.procurement.dto.ProcurementUpdateDto;
@@ -31,28 +30,25 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class ProcurementServiceImpl extends DefaultServiceImpl<
-        Procurement,
-        ProcurementCreateDto,
-        ProcurementUpdateDto,
-        ProcurementView,
-        ProcurementRepository,
-        ProcurementMapper> implements ProcurementService {
+    Procurement,
+    ProcurementCreateDto,
+    ProcurementUpdateDto,
+    ProcurementView,
+    ProcurementRepository,
+    ProcurementMapper> implements ProcurementService {
 
     private final ParticipantRepository participantRepository;
-    private final ParticipantService participantService;
     private final EventRepository eventRepository;
     private final NotificationServiceImpl notificationService;
 
     public ProcurementServiceImpl(
-            @Qualifier("procurementRepository") ProcurementRepository procurementRepository,
-            ProcurementMapper procurementMapper,
-            ParticipantRepository participantRepository,
-            ParticipantService participantService,
-            EventRepository eventRepository,
-            NotificationServiceImpl notificationService) {
+        @Qualifier("procurementRepository") ProcurementRepository procurementRepository,
+        ProcurementMapper procurementMapper,
+        ParticipantRepository participantRepository,
+        EventRepository eventRepository,
+        NotificationServiceImpl notificationService) {
         super(procurementRepository, procurementMapper);
         this.participantRepository = participantRepository;
-        this.participantService = participantService;
         this.eventRepository = eventRepository;
         this.notificationService = notificationService;
     }
@@ -67,8 +63,8 @@ public class ProcurementServiceImpl extends DefaultServiceImpl<
         //  если кто-то поменял закупку, то ответственного за нее уведомляем
         if (updateDto.getActionParticipant() != null && !updateDto.getActionParticipant().equals(responsibleId)) {
             NotificationDto notification = NotificationDto.builder()
-                    .messageText(mapper.toCompareTelegramMessage(procurement, updated))
-                    .build();
+                .messageText(mapper.toCompareTelegramMessage(procurement, updated))
+                .build();
             notificationService.sendNotificationToParticipant(responsibleId, notification);
         }
 
@@ -101,8 +97,8 @@ public class ProcurementServiceImpl extends DefaultServiceImpl<
             if (!event.getOrganizer().equals(newResponsible)) {
                 String assignMessage = String.format("На вас назначили закупку: «%s», цена: %s ₽", procurement.getName(), procurement.getPrice().toString());
                 NotificationDto assignNotification = NotificationDto.builder()
-                        .messageText(assignMessage)
-                        .build();
+                    .messageText(assignMessage)
+                    .build();
                 notificationService.sendNotificationToParticipant(newResponsible.getId(), assignNotification);
             }
 
@@ -110,8 +106,8 @@ public class ProcurementServiceImpl extends DefaultServiceImpl<
             if (!event.getOrganizer().equals(oldResponsible)) {
                 String unassignMessage = String.format("С вас сняли закупку: «%s»", procurement.getName());
                 NotificationDto unassignNotification = NotificationDto.builder()
-                        .messageText(unassignMessage)
-                        .build();
+                    .messageText(unassignMessage)
+                    .build();
                 notificationService.sendNotificationToParticipant(oldResponsible.getId(), unassignNotification);
             }
         }
