@@ -1,5 +1,6 @@
 package ru.sberhack2025.companyevents.core.service;
 
+import ru.sberhack2025.companyevents.core.dto.BaseView;
 import ru.sberhack2025.companyevents.core.model.BaseEntity;
 
 import java.util.List;
@@ -12,7 +13,7 @@ public interface DefaultService<
         E extends BaseEntity,
         CreateDto,
         UpdateDto,
-        View
+        View extends BaseView
         > {
 
     View create(CreateDto createDto);

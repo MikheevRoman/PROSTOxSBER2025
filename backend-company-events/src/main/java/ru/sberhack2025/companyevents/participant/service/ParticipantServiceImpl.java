@@ -21,6 +21,7 @@ import ru.sberhack2025.companyevents.user.repository.UserRepository;
 import ru.sberhack2025.companyevents.user.service.UserServiceImpl;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,9 +45,9 @@ public class ParticipantServiceImpl implements ParticipantService {
     @Override
     public ParticipantView create(ParticipantCreateDto createDto) {
         UserCreateDto userCreateDto = UserCreateDto.builder()
-                .tgUserId(createDto.getTgUserId())
-                .name(createDto.getName())
-                .build();
+            .tgUserId(createDto.getTgUserId())
+            .name(createDto.getName())
+            .build();
 
         try {
             userService.create(userCreateDto);
@@ -100,7 +101,7 @@ public class ParticipantServiceImpl implements ParticipantService {
         Participant organizer = event.getOrganizer();
         // при удалении участника все штуки, за которые он был ответственен переходят на организатора
         new ArrayList<>(participant.getContributedProcurements())
-                .forEach(p -> p.removeContributor(participant));
+            .forEach(p -> p.removeContributor(participant));
         participant.getResponsibleProcurements().forEach(p -> {
             p.setResponsible(organizer);
             organizer.addResponsibleProcurement(p);
@@ -114,7 +115,6 @@ public class ParticipantServiceImpl implements ParticipantService {
     }
 
 
-
     public ParticipantView toView(Participant participant) {
         ParticipantView view = mapper.toView(participant);
         User user = participant.getUser();
@@ -124,7 +124,10 @@ public class ParticipantServiceImpl implements ParticipantService {
     }
 
     public List<ParticipantView> toView(List<Participant> participants) {
-        return participants.stream().map(this::toView).toList();
+        return participants.stream()
+            .map(this::toView)
+            .sorted(Comparator.comparing(ParticipantView::getCreatedAt).reversed())
+            .toList();
     }
 
     private void checkIfExistsOrThrow(User user, Event event) {

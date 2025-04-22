@@ -2,14 +2,13 @@ package ru.sberhack2025.companyevents.event.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 import ru.sberhack2025.companyevents.common.formatter.DateFormatter;
+import ru.sberhack2025.companyevents.core.dto.BaseView;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -17,9 +16,13 @@ import java.util.UUID;
  * @author Andrey Kurnosov
  */
 @Data
+@SuperBuilder
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class EventView implements DateFormatter {
+public class EventView extends BaseView implements DateFormatter {
 
     @Schema(description = "Entity id (uuid)", example = "faf063f0-50d9-4251-89dd-be1487f73b9c")
     UUID id;
@@ -48,10 +51,6 @@ public class EventView implements DateFormatter {
 
     @Schema(description = "Event referral code", example = "faf063f0aad3")
     String eventRefCode;
-
-    @Schema(description = "User creation time", example = "2024-07-14T11:12:13Z", format = INSTANT_PATTERN)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = INSTANT_PATTERN, timezone = "UTC")
-    Instant createdAt;
 
 }
 

@@ -5,10 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.sberhack2025.companyevents.common.error.exception.entity.NotUniqueException;
+import ru.sberhack2025.companyevents.core.dto.BaseView;
 import ru.sberhack2025.companyevents.core.mapper.DefaultMapper;
 import ru.sberhack2025.companyevents.core.model.BaseEntity;
 import ru.sberhack2025.companyevents.core.repository.DefaultRepository;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,7 +24,7 @@ public abstract class DefaultServiceImpl<
         E extends BaseEntity,
         CreateDto,
         UpdateDto,
-        View,
+        View extends BaseView,
         Rep extends DefaultRepository<E>,
         Mapper extends DefaultMapper<E, CreateDto, UpdateDto, View>
         > implements DefaultService<E, CreateDto, UpdateDto, View> {
@@ -85,7 +87,16 @@ public abstract class DefaultServiceImpl<
     }
 
     protected List<View> toView(List<E> entities) {
-        return entities.stream().map(e -> enrichView(e, mapper.toView(e))).toList();
+        return entities.stream()
+            .map(e -> enrichView(e, mapper.toView(e)))
+            .sorted(defaultSort())
+            .toList();
+    }
+
+    protected Comparator<View> defaultSort() {
+        return Comparator
+            .comparing((View v) -> v.getCreatedAt())
+            .reversed();
     }
 
     protected void checkIfNotExistsOrThrow(CreateDto createDto) {

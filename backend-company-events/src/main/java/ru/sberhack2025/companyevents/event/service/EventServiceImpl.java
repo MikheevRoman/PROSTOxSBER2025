@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.sberhack2025.companyevents.common.base64.Base64Utils;
+import ru.sberhack2025.companyevents.core.dto.BaseView;
 import ru.sberhack2025.companyevents.core.service.DefaultServiceImpl;
 import ru.sberhack2025.companyevents.event.dto.EventCreateDto;
 import ru.sberhack2025.companyevents.event.dto.EventUpdateDto;
@@ -17,6 +18,7 @@ import ru.sberhack2025.companyevents.participant.repository.ParticipantRepositor
 import ru.sberhack2025.companyevents.user.model.User;
 import ru.sberhack2025.companyevents.user.repository.UserRepository;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,7 +46,7 @@ public class EventServiceImpl extends DefaultServiceImpl<Event, EventCreateDto, 
     public List<EventView> getByTgUserId(Long tgUserId) {
         User user = userRepository.find(tgUserId);
         List<Event> events = repository.findEventsByTgUserId(user.getTgUserId());
-        return events.stream().map(e -> enrichView(e, mapper.toView(e))).toList();
+        return toView(events);
     }
 
     @Override
@@ -84,6 +86,11 @@ public class EventServiceImpl extends DefaultServiceImpl<Event, EventCreateDto, 
         eventView.setOrganizerTgUserId(organizerTgUserId);
         eventView.setEventRefCode(Base64Utils.encodeUUID(event.getId()));
         return eventView;
+    }
+
+    @Override
+    protected Comparator<EventView> defaultSort() {
+        return Comparator.comparing(EventView::getDate).reversed();
     }
 
 
