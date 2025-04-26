@@ -18,7 +18,8 @@ import java.util.List;
  * @author Andrey Kurnosov
  */
 @Data
-@SuperBuilder
+@With
+@SuperBuilder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)

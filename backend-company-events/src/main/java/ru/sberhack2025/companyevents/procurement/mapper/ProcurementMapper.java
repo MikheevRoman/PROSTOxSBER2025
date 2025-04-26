@@ -4,7 +4,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import ru.sberhack2025.companyevents.core.dto.BaseView;
 import ru.sberhack2025.companyevents.core.mapper.DefaultMapper;
 import ru.sberhack2025.companyevents.procurement.dto.ContributionView;
 import ru.sberhack2025.companyevents.procurement.dto.ProcurementCreateDto;
@@ -76,11 +75,11 @@ public interface ProcurementMapper extends DefaultMapper<Procurement, Procuremen
 
     default String toTelegramMessage(Procurement view) {
         return String.join("\n",
-                formatField("Название", view.getName()),
-                formatField("Цена", view.getPrice() != null ? view.getPrice().toPlainString() : null),
-                formatField("Комментарий", view.getComment()),
-                formatField("Статус выполнения", view.getCompletionStatus() != null ? view.getCompletionStatus().getDisplayName() : null),
-                formatField("Статус сбора средств", view.getFundraisingStatus() != null ? view.getFundraisingStatus().getDisplayName() : null)
+                formatField("- Название", view.getName()),
+                formatField("- Цена", view.getPrice() != null ? view.getPrice().toPlainString() : null),
+                formatField("- Комментарий", view.getComment()),
+                formatField("- Статус выполнения", view.getCompletionStatus() != null ? view.getCompletionStatus().getDisplayName() : null),
+                formatField("- Статус сбора средств", view.getFundraisingStatus() != null ? view.getFundraisingStatus().getDisplayName() : null)
         );
     }
 
