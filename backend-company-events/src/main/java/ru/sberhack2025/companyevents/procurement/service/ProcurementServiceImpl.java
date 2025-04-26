@@ -105,7 +105,7 @@ public class ProcurementServiceImpl extends DefaultServiceImpl<
         }
 
         //  если кто-то поменял основные реквизиты закупки, то ответственного за нее уведомляем (если не сменился ответственный и если сменил не сам ответственный)
-        if (updateDto.getResponsibleId() != null && !updateDto.getResponsibleId().equals(oldResponsibleId) &&
+        if ((updateDto.getResponsibleId() == null || updateDto.getResponsibleId().equals(oldResponsibleId)) &&
             !updateDto.getActionParticipant().equals(oldResponsibleId) &&
             !updated.equals(procurement)) {
             NotificationDto notification = NotificationDto.builder()
