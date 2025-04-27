@@ -56,38 +56,38 @@ public class ProcurementServiceImpl extends DefaultServiceImpl<
     @Override
     @Transactional
     public ProcurementView update(UUID id, ProcurementUpdateDto updateDto) {
-        Procurement procurement = repository.find(id);
-        Procurement updated = mapper.update(updateDto, procurement.toBuilder().build());
+        Procurement oldProcurement = repository.find(id);
+        Procurement newProcurement = mapper.update(updateDto, oldProcurement.toBuilder().build());
 
-        UUID oldResponsibleId = procurement.getResponsible().getId();
+        UUID oldResponsibleId = oldProcurement.getResponsible().getId();
         UUID newResponsibleId = updateDto.getResponsibleId();
 
         // обновляем контрибьютеров
         if (updateDto.getContributors() != null) {
             // список удаленных контрибьютеров
             List<Participant> newContributors = participantRepository.findAllById(updateDto.getContributors());
-            List<Participant> removedContributors = new ArrayList<>(procurement.getContributors());
+            List<Participant> removedContributors = new ArrayList<>(oldProcurement.getContributors());
             removedContributors.removeAll(newContributors);
             for (Participant participant : removedContributors) {
-                updated.removeContributor(participant);
+                newProcurement.removeContributor(participant);
             }
 
             // список добавленных контрибьютеров
             List<Participant> addedContributors = new ArrayList<>(newContributors);
-            addedContributors.removeAll(procurement.getContributors());
+            addedContributors.removeAll(oldProcurement.getContributors());
             for (Participant participant : addedContributors) {
-                updated.addContributor(participant);
+                newProcurement.addContributor(participant);
             }
         }
 
         // обновляем ответственного
         if (updateDto.getResponsibleId() != null && !updateDto.getResponsibleId().equals(oldResponsibleId)) {
             Participant newResponsible = participantRepository.find(updateDto.getResponsibleId());
-            updated.setResponsible(newResponsible);
+            newProcurement.setResponsible(newResponsible);
 
             // отправляем уведомление новому ответственному (если сменил не он)
             if (!updateDto.getActionParticipant().equals(newResponsibleId)) {
-                String assignMessage = String.format("На вас назначили закупку: «%s», цена: %s ₽", procurement.getName(), procurement.getPrice().toString());
+                String assignMessage = String.format("На вас назначили закупку: «%s», цена: %s ₽", oldProcurement.getName(), oldProcurement.getPrice().toString());
                 NotificationDto assignNotification = NotificationDto.builder()
                     .messageText(assignMessage)
                     .build();
@@ -96,7 +96,7 @@ public class ProcurementServiceImpl extends DefaultServiceImpl<
 
             // отправляем уведомление старому ответственному (если сменил не он)
             if (!updateDto.getActionParticipant().equals(oldResponsibleId)) {
-                String unassignMessage = String.format("С вас сняли закупку: «%s»", procurement.getName());
+                String unassignMessage = String.format("С вас сняли закупку: «%s»", oldProcurement.getName());
                 NotificationDto unassignNotification = NotificationDto.builder()
                     .messageText(unassignMessage)
                     .build();
@@ -107,15 +107,15 @@ public class ProcurementServiceImpl extends DefaultServiceImpl<
         //  если кто-то поменял основные реквизиты закупки, то ответственного за нее уведомляем (если не сменился ответственный и если сменил не сам ответственный)
         if ((updateDto.getResponsibleId() == null || updateDto.getResponsibleId().equals(oldResponsibleId)) &&
             !updateDto.getActionParticipant().equals(oldResponsibleId) &&
-            !updated.equals(procurement)) {
+            !newProcurement.equals(oldProcurement)) {
             NotificationDto notification = NotificationDto.builder()
-                .messageText(mapper.toCompareTelegramMessage(procurement, updated))
+                .messageText(mapper.toCompareTelegramMessage(oldProcurement, newProcurement))
                 .build();
-            notificationService.sendNotificationToParticipant(updated.getResponsible().getId(), notification);
+            notificationService.sendNotificationToParticipant(newProcurement.getResponsible().getId(), notification);
         }
 
-        repository.save(updated);
-        return toView(updated);
+        repository.save(newProcurement);
+        return toView(newProcurement);
 
     }
 
