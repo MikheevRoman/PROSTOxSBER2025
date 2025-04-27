@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * @author Andrey Kurnosov
  */
@@ -26,10 +28,11 @@ import java.util.List;
 @Entity
 @Table(name = "procurement")
 @ToString(exclude = {"event", "responsible", "contributors"})
-@EqualsAndHashCode(callSuper = true, exclude = {"event", "responsible", "contributors"})
+@EqualsAndHashCode(callSuper = true)
 public class Procurement extends BaseEntity {
 
     @JsonIgnore
+    @EqualsAndHashCode.Exclude
     @ManyToOne
     @JoinColumn(name = "event_id", nullable = false)
     Event event;
@@ -37,6 +40,7 @@ public class Procurement extends BaseEntity {
     @Column(nullable = false)
     String name;
 
+    @EqualsAndHashCode.Exclude
     @Column(precision = 10, scale = 2)
     @Unsigned
     BigDecimal price;
@@ -45,6 +49,7 @@ public class Procurement extends BaseEntity {
     String comment;
 
     @JsonIgnore
+    @EqualsAndHashCode.Exclude
     @ManyToOne
     @JoinColumn(name = "responsible_id", nullable = false)
     Participant responsible;
@@ -55,6 +60,7 @@ public class Procurement extends BaseEntity {
     CompletionStatus completionStatus = CompletionStatus.IN_PROGRESS;
 
     @Builder.Default
+    @EqualsAndHashCode.Exclude
     @ManyToMany
     @JoinTable(
             name = "procurement_contributors",
@@ -68,6 +74,7 @@ public class Procurement extends BaseEntity {
     @Column(nullable = false)
     private FundraisingStatus fundraisingStatus = FundraisingStatus.NONE;
 
+    @Getter
     public enum CompletionStatus {
         IN_PROGRESS("В процессе"),
         DONE("Завершено");
@@ -79,11 +86,9 @@ public class Procurement extends BaseEntity {
             this.displayName = displayName;
         }
 
-        public String getDisplayName() {
-            return displayName;
-        }
     }
 
+    @Getter
     public enum FundraisingStatus {
         NONE("Нет"),      // сбор средств не производится
         PLANNING("Планируется"),  // планируется сбор средств
@@ -95,9 +100,11 @@ public class Procurement extends BaseEntity {
             this.displayName = displayName;
         }
 
-        public String getDisplayName() {
-            return displayName;
-        }
+    }
+
+    @EqualsAndHashCode.Include
+    private BigDecimal getAmountForEquals() {
+        return ofNullable(price).map(BigDecimal::stripTrailingZeros).orElse(null);
     }
 
     public void addContributor(Participant participant) {
