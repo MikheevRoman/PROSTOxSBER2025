@@ -13,6 +13,7 @@ import ru.sberhack2025.companyevents.procurement.model.Procurement;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +22,7 @@ import java.util.Optional;
  * @author Andrey Kurnosov
  */
 @Mapper(componentModel = "spring",
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface ProcurementMapper extends DefaultMapper<Procurement, ProcurementCreateDto, ProcurementUpdateDto, ProcurementView> {
 
     @Mapping(target = "contributors", ignore = true)
@@ -46,12 +47,12 @@ public interface ProcurementMapper extends DefaultMapper<Procurement, Procuremen
         BigDecimal contributors = BigDecimal.valueOf(procurement.getContributors().size());
         BigDecimal participations = BigDecimal.valueOf(participationsNumber);
         return ContributionView.builder()
-                .id(procurement.getId())
-                .name(procurement.getName())
-                .comment(procurement.getComment())
-                .price(getPrice(procurement, contributors, participations))
-                .createdAt(procurement.getCreatedAt())
-                .build();
+            .id(procurement.getId())
+            .name(procurement.getName())
+            .comment(procurement.getComment())
+            .price(getPrice(procurement, contributors, participations))
+            .createdAt(procurement.getCreatedAt())
+            .build();
     }
 
     private BigDecimal getPrice(Procurement procurement, BigDecimal contributors, BigDecimal participations) {
@@ -65,22 +66,38 @@ public interface ProcurementMapper extends DefaultMapper<Procurement, Procuremen
 
     default String toCompareTelegramMessage(Procurement oldProcurement, Procurement newProcurement) {
         return String.join("\n",
-                "Закупка под твоей ответственностью, была изменена.\n",
-                "Было:",
-                toTelegramMessage(oldProcurement),
-                "\nСтало:",
-                toTelegramMessage(newProcurement)
-                );
+            String.format("Закупка «%s» под твоей ответственностью, была изменена.\n", oldProcurement.getName()),
+            "Было:",
+            toTelegramMessage(oldProcurement, newProcurement),
+            "\nСтало:",
+            toTelegramMessage(newProcurement, oldProcurement)
+        );
     }
 
-    default String toTelegramMessage(Procurement view) {
-        return String.join("\n",
-                formatField("- Название", view.getName()),
-                formatField("- Цена", view.getPrice() != null ? view.getPrice().toPlainString() : null),
-                formatField("- Комментарий", view.getComment()),
-                formatField("- Статус выполнения", view.getCompletionStatus() != null ? view.getCompletionStatus().getDisplayName() : null),
-                formatField("- Статус сбора средств", view.getFundraisingStatus() != null ? view.getFundraisingStatus().getDisplayName() : null)
-        );
+    default String toTelegramMessage(Procurement view, Procurement other) {
+        List<String> message = new ArrayList<>();
+
+        if (!view.getName().equals(other.getName())) {
+            message.add(formatField("- Название", view.getName()));
+        }
+
+        if (view.getPrice().compareTo(other.getPrice()) != 0) {
+            message.add(formatField("- Цена", view.getPrice().toPlainString()));
+        }
+
+        if (!view.getComment().equals(other.getComment())) {
+            message.add(formatField("- Комментарий", view.getComment()));
+        }
+
+        if (!view.getCompletionStatus().equals(other.getCompletionStatus())) {
+            message.add(formatField("- Статус выполнения", view.getCompletionStatus().getDisplayName()));
+        }
+
+        if (!view.getFundraisingStatus().equals(other.getFundraisingStatus())) {
+            message.add(formatField("- Статус сбора средств", view.getFundraisingStatus().getDisplayName()));
+        }
+
+        return String.join("\n", message);
     }
 
     private String formatField(String label, String value) {
