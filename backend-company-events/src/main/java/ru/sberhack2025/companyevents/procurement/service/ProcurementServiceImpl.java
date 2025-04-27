@@ -86,7 +86,7 @@ public class ProcurementServiceImpl extends DefaultServiceImpl<
             newProcurement.setResponsible(newResponsible);
 
             // отправляем уведомление новому ответственному (если сменил не он)
-            if (!updateDto.getActionParticipant().equals(newResponsibleId)) {
+            if (updateDto.getActionParticipant() != null && !updateDto.getActionParticipant().equals(newResponsibleId)) {
                 String assignMessage = String.format("На вас назначили закупку: «%s», цена: %s ₽", oldProcurement.getName(), oldProcurement.getPrice().toString());
                 NotificationDto assignNotification = NotificationDto.builder()
                     .messageText(assignMessage)
@@ -95,7 +95,7 @@ public class ProcurementServiceImpl extends DefaultServiceImpl<
             }
 
             // отправляем уведомление старому ответственному (если сменил не он)
-            if (!updateDto.getActionParticipant().equals(oldResponsibleId)) {
+            if (updateDto.getActionParticipant() != null && !updateDto.getActionParticipant().equals(oldResponsibleId)) {
                 String unassignMessage = String.format("С вас сняли закупку: «%s»", oldProcurement.getName());
                 NotificationDto unassignNotification = NotificationDto.builder()
                     .messageText(unassignMessage)
@@ -106,7 +106,7 @@ public class ProcurementServiceImpl extends DefaultServiceImpl<
 
         //  если кто-то поменял основные реквизиты закупки, то ответственного за нее уведомляем (если не сменился ответственный и если сменил не сам ответственный)
         if ((updateDto.getResponsibleId() == null || updateDto.getResponsibleId().equals(oldResponsibleId)) &&
-            !updateDto.getActionParticipant().equals(oldResponsibleId) &&
+            (updateDto.getActionParticipant() == null || !updateDto.getActionParticipant().equals(oldResponsibleId)) &&
             !newProcurement.equals(oldProcurement)) {
             NotificationDto notification = NotificationDto.builder()
                 .messageText(mapper.toCompareTelegramMessage(oldProcurement, newProcurement))
